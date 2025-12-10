@@ -96,7 +96,7 @@
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 30px;
-            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(59, 130, 246, 0.3);
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 95, 39, 0.3);
             line-height: 1.2;
             background: linear-gradient(135deg, #ffffff 0%, #c2e9fb 100%);
             -webkit-background-clip: text;
@@ -143,7 +143,7 @@
             opacity: 0;
             transform: translateY(10px);
             animation: fadeInUp 0.8s ease-out 0.6s forwards;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5), 0 0 30px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 95, 39, 0.2);
         }
         
         .button::before {
@@ -164,7 +164,7 @@
         
         .button:hover {
             transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6), 0 0 40px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 95, 39, 0.3);
         }
         
         .button:active {
@@ -208,20 +208,21 @@
             }
         }
         
-        /* Красивый экран загрузки */
+        /* Красивый экран загрузки с градиентом FF5F27 -> F130A0 */
         .loading {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+            background: linear-gradient(135deg, #FF5F27 0%, #F130A0 100%);
             z-index: 10;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            overflow: hidden;
         }
         
         .loading.hidden {
@@ -233,9 +234,9 @@
         /* Анимированный логотип */
         .loading-logo {
             position: relative;
-            width: 120px;
-            height: 120px;
-            margin-bottom: 30px;
+            width: 160px;
+            height: 160px;
+            margin-bottom: 40px;
         }
         
         .logo-circle {
@@ -245,24 +246,26 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            border: 3px solid transparent;
+            border: 4px solid transparent;
+            box-sizing: border-box;
         }
         
         .logo-circle-1 {
-            border-top: 3px solid #3b82f6;
-            border-right: 3px solid transparent;
+            border-top: 4px solid rgba(255, 255, 255, 0.9);
+            border-right: 4px solid transparent;
             animation: rotate 2s linear infinite;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
         }
         
         .logo-circle-2 {
-            border-bottom: 3px solid #8b5cf6;
-            border-left: 3px solid transparent;
-            animation: rotate 2s linear infinite reverse;
-            animation-delay: 0.3s;
+            border-bottom: 4px solid rgba(255, 255, 255, 0.7);
+            border-left: 4px solid transparent;
+            animation: rotate 2.5s linear infinite reverse;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
         }
         
         .logo-circle-3 {
-            border: 3px solid rgba(59, 130, 246, 0.2);
+            border: 4px solid rgba(255, 255, 255, 0.3);
             animation: pulse 2s ease-in-out infinite;
         }
         
@@ -271,9 +274,11 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 40px;
+            font-size: 48px;
             color: white;
-            text-shadow: 0 0 20px rgba(59, 130, 246, 0.7);
+            font-weight: 700;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+            letter-spacing: 2px;
         }
         
         /* Анимации */
@@ -283,8 +288,14 @@
         }
         
         @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
+            0%, 100% { 
+                transform: scale(1); 
+                opacity: 0.5; 
+            }
+            50% { 
+                transform: scale(1.1); 
+                opacity: 0.8; 
+            }
         }
         
         @keyframes fadeInUp {
@@ -298,37 +309,137 @@
             }
         }
         
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        
         .loading-text {
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             margin-top: 20px;
             text-align: center;
-            opacity: 0.8;
-            animation: pulse 2s ease-in-out infinite;
+            font-weight: 500;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(
+                90deg,
+                #FFFFFF 0%,
+                #FFE6F2 25%,
+                #FFFFFF 50%,
+                #FFE6F2 75%,
+                #FFFFFF 100%
+            );
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s linear infinite;
         }
         
         .loading-progress {
-            width: 200px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-            margin-top: 20px;
+            width: 250px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            margin-top: 30px;
             overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
         
         .loading-progress-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-            border-radius: 2px;
-            transition: width 0.3s ease;
-            animation: loadingProgress 2s ease-in-out infinite;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(255, 255, 255, 0.7) 50%, 
+                rgba(255, 255, 255, 0.9) 100%);
+            border-radius: 3px;
+            animation: loadingProgress 2.5s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
         }
         
         @keyframes loadingProgress {
-            0% { width: 0%; }
-            50% { width: 100%; }
-            100% { width: 0%; }
+            0% { 
+                width: 0%; 
+                margin-left: 0;
+            }
+            50% { 
+                width: 100%; 
+                margin-left: 0;
+            }
+            100% { 
+                width: 0%; 
+                margin-left: 100%;
+            }
+        }
+        
+        /* Эффект частиц */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 15s linear infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100px) translateX(calc(100vw * var(--random-x))) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Волны на фоне */
+        .waves {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.2) 50%, 
+                rgba(255, 255, 255, 0.1) 100%);
+            animation: wave 10s linear infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -5s;
+            opacity: 0.5;
+        }
+        
+        @keyframes wave {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
     </style>
 </head>
@@ -337,8 +448,14 @@
     <img class="preload-image" id="preloadBg" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/BG.png" alt="preload">
     <img class="preload-image" id="preloadButton" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png" alt="preload">
     
-    <!-- Красивый экран загрузки -->
+    <!-- Красивый экран загрузки с оранжево-розовым градиентом -->
     <div class="loading" id="loading">
+        <div class="particles" id="particles"></div>
+        <div class="waves">
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+        
         <div class="loading-logo">
             <div class="logo-circle logo-circle-1"></div>
             <div class="logo-circle logo-circle-2"></div>
@@ -376,12 +493,48 @@
             window.location.href = "ar-scene.html";
         }
         
+        // Создание частиц
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 25;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Случайная позиция
+                particle.style.left = Math.random() * 100 + '%';
+                
+                // Случайный размер
+                const size = 2 + Math.random() * 4;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                
+                // Случайная прозрачность
+                particle.style.opacity = 0.4 + Math.random() * 0.4;
+                
+                // Случайная задержка анимации
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                
+                // Случайная длительность анимации
+                particle.style.animationDuration = 10 + Math.random() * 10 + 's';
+                
+                // Случайное движение по X
+                particle.style.setProperty('--random-x', Math.random() * 2 - 1);
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
         // Оптимизированная загрузка
         document.addEventListener('DOMContentLoaded', function() {
             const loading = document.getElementById('loading');
             const background = document.getElementById('background');
             const content = document.getElementById('content');
             const startButton = document.getElementById('startButton');
+            
+            // Создаем частицы
+            createParticles();
             
             // Элементы предзагрузки
             const preloadBg = document.getElementById('preloadBg');
@@ -404,16 +557,16 @@
                         // 2. Устанавливаем фон кнопки
                         startButton.style.backgroundImage = `url('${preloadButton.src}')`;
                         
-                        // 3. Скрываем экран загрузки
+                        // 3. Скрываем экран загрузки с задержкой для завершения анимаций
                         setTimeout(function() {
                             loading.classList.add('hidden');
                             
                             // 4. Показываем контент
                             setTimeout(function() {
                                 content.classList.add('visible');
-                            }, 300);
-                        }, 500);
-                    }, 100);
+                            }, 400);
+                        }, 600);
+                    }, 200);
                 }
             }
             
@@ -426,7 +579,7 @@
                 preloadBg.onload = imageLoaded;
                 preloadBg.onerror = function() {
                     console.error('Не удалось загрузить фон с GitHub');
-                    background.style.backgroundColor = '#1a1a2e';
+                    background.style.backgroundColor = '#0a0a1a';
                     background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
                     imageLoaded();
                 };
@@ -442,7 +595,7 @@
                     console.error('Не удалось загрузить кнопку с GitHub');
                     // Красивый fallback градиент для кнопки
                     startButton.style.backgroundImage = 
-                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                        'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
                     imageLoaded();
                 };
             }
@@ -459,14 +612,14 @@
                     if (preloadBg.src) {
                         background.style.backgroundImage = `url('${preloadBg.src}')`;
                     } else {
-                        background.style.backgroundColor = '#1a1a2e';
+                        background.style.backgroundColor = '#0a0a1a';
                         background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
                     }
                     
                     if (preloadButton.src) {
                         startButton.style.backgroundImage = `url('${preloadButton.src}')`;
                     } else {
-                        startButton.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                        startButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
                     }
                     
                     background.classList.add('loaded');
@@ -474,7 +627,7 @@
                     
                     setTimeout(function() {
                         content.classList.add('visible');
-                    }, 300);
+                    }, 400);
                 }
             }, 10000); // 10 секунд максимум
             
