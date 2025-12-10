@@ -42,6 +42,11 @@
             display: none !important;
         }
         
+        /* Стиль для курсора */
+        #cursor {
+            pointer-events: auto !important;
+        }
+        
         /* Canvas на весь экран */
         a-scene, canvas {
             position: absolute;
@@ -49,6 +54,103 @@
             left: 0;
             width: 100%;
             height: 100%;
+        }
+        
+        /* Панель с информацией */
+        .info-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: rgba(10, 10, 26, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            box-sizing: border-box;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 2000;
+            color: white;
+            font-family: 'Inter Tight', sans-serif;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 95, 39, 0.3);
+        }
+        
+        .info-panel.visible {
+            display: flex;
+        }
+        
+        .info-panel h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ffffff 0%, #c2e9fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .info-panel p {
+            font-size: 16px;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .panel-close-button {
+            width: 100%;
+            height: 60px;
+            background-image: url('https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 500;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+        }
+        
+        .panel-close-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .panel-close-button span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Заглушка для кликов вне панели */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1999;
+        }
+        
+        .overlay.visible {
+            display: block;
         }
     </style>
 </head>
@@ -58,6 +160,18 @@
     <button class="back-button" onclick="goBack()" title="Назад">
         <img src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_Back.png" alt="Назад">
     </button>
+    
+    <!-- Панель с информацией -->
+    <div class="overlay" id="overlay"></div>
+    <div class="info-panel" id="infoPanel">
+        <div>
+            <h2>AR-квест</h2>
+            <p>Погрузитесь в атмосферу старой и современной Москвы сквозь шедевры русских художников.</p>
+        </div>
+        <button class="panel-close-button" id="closePanel">
+            <span>Закрыть</span>
+        </button>
+    </div>
 
     <!-- AR сцена без лишних настроек -->
     <a-scene
@@ -66,29 +180,35 @@
         embedded
         arjs="sourceType: webcam; debugUIEnabled: false;"
     >
+        <!-- Добавляем a-assets для правильной загрузки изображений -->
         <a-assets>
-            <!-- Предзагрузка ассетов -->
-            <img id="poi-dot" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/POI_Dot.png" crossorigin="anonymous">
+            <img id="poi-image" src="https://raw.githubusercontent.com/Artemvga/tenderhqz9vp/gh-pages/assets/sprites/PNG/POI_Dot.png">
         </a-assets>
         
         <a-marker
             type="pattern"
             preset="custom"
-            url="https://raw.githubusercontent.com/Artemvga/tenderhqz9vp/gh-pages/assets/marker.patt"
-            raycaster="objects: .clickable"
-            cursor="rayOrigin: mouse"
+            url="assets/marker.patt"
         >
-            <a-image
-                src="#poi-dot"
+            <a-plane
+                id="poi-dot"
+                src="#poi-image"
                 position="0 0 0"
-                scale="0.5 0.5 0.5"
-                class="clickable"
                 rotation="-90 0 0"
-                gesture-handler="minScale: 0.25; maxScale: 1.5"
-            ></a-image>
+                scale="0.3 0.3 0.3"
+                class="clickable"
+                click-handler
+                material="transparent: true; alphaTest: 0.5; side: double;"
+            ></a-plane>
         </a-marker>
 
-        <a-entity camera></a-entity>
+        <a-entity camera>
+            <a-cursor
+                id="cursor"
+                color="#FF5F27"
+                raycaster="objects: .clickable; far: 20"
+            ></a-cursor>
+        </a-entity>
     </a-scene>
 
     <script>
@@ -99,7 +219,42 @@
         // Обработка Escape
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
-                goBack();
+                if (infoPanel.classList.contains('visible')) {
+                    closeInfoPanel();
+                } else {
+                    goBack();
+                }
+            }
+        });
+        
+        // Регистрация компонента для обработки кликов
+        AFRAME.registerComponent('click-handler', {
+            init: function () {
+                var el = this.el;
+                
+                // Обработка через курсор (основной способ)
+                el.addEventListener('click', function (evt) {
+                    console.log('POI clicked via cursor!');
+                    openInfoPanel();
+                });
+                
+                // Обработка через raycaster
+                el.addEventListener('raycaster-intersected', function (evt) {
+                    console.log('POI intersected by raycaster');
+                });
+                
+                // Для мобильных устройств - тап по экрану
+                el.addEventListener('touchstart', function (evt) {
+                    console.log('POI touched!');
+                    openInfoPanel();
+                    evt.stopPropagation();
+                });
+                
+                // Альтернативный способ для мобильных
+                el.addEventListener('mousedown', function (evt) {
+                    console.log('POI mousedown!');
+                    openInfoPanel();
+                });
             }
         });
         
@@ -112,6 +267,84 @@
                     if (el) el.style.display = 'none';
                 });
             }, 100);
+        });
+        
+        // Ждем полной загрузки сцены
+        document.querySelector('a-scene').addEventListener('loaded', function() {
+            console.log('Scene loaded');
+            
+            const poiElement = document.querySelector('#poi-dot');
+            const cursor = document.querySelector('#cursor');
+            
+            if (poiElement) {
+                console.log('POI element found and ready');
+                
+                // Дополнительная проверка кликабельности
+                poiElement.addEventListener('mouseenter', function() {
+                    console.log('Mouse entered POI');
+                });
+                
+                poiElement.addEventListener('mouseleave', function() {
+                    console.log('Mouse left POI');
+                });
+            }
+            
+            if (cursor) {
+                console.log('Cursor found and ready');
+                
+                // Добавляем обработчик на курсор для отладки
+                cursor.addEventListener('click', function(evt) {
+                    console.log('Cursor clicked!');
+                });
+            }
+            
+            // Глобальный обработчик для мобильных устройств
+            const scene = document.querySelector('a-scene');
+            scene.addEventListener('click', function(evt) {
+                console.log('Scene clicked, target:', evt.target);
+                
+                // Если клик был на POI
+                const target = evt.target;
+                if (target && target.id === 'poi-dot') {
+                    console.log('Opening panel via scene click');
+                    openInfoPanel();
+                }
+            });
+        });
+        
+        // Функции для работы с панелью информации
+        function openInfoPanel() {
+            console.log('Opening info panel');
+            const infoPanel = document.getElementById('infoPanel');
+            const overlay = document.getElementById('overlay');
+            
+            if (infoPanel && overlay) {
+                infoPanel.classList.add('visible');
+                overlay.classList.add('visible');
+                
+                // Добавляем обработчик клика на оверлей для закрытия панели
+                overlay.onclick = closeInfoPanel;
+            }
+        }
+        
+        function closeInfoPanel() {
+            console.log('Closing info panel');
+            const infoPanel = document.getElementById('infoPanel');
+            const overlay = document.getElementById('overlay');
+            
+            if (infoPanel && overlay) {
+                infoPanel.classList.remove('visible');
+                overlay.classList.remove('visible');
+                overlay.onclick = null;
+            }
+        }
+        
+        // Инициализация кнопки закрытия панели
+        window.addEventListener('load', function() {
+            const closeButton = document.getElementById('closePanel');
+            if (closeButton) {
+                closeButton.addEventListener('click', closeInfoPanel);
+            }
         });
     </script>
 </body>
