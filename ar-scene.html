@@ -1,212 +1,123 @@
 <!doctype html>
 <html>
 <head>
+    <meta charset="utf-8" />
+    <title>AR scene — 2 POI + conditional cursor</title>
+
     <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
     <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+
     <style>
-        /* Минимальные стили */
-        body {
-            margin: 0;
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
-        }
-        
-        /* Простая кнопка назад */
-        .back-button {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            width: 60px;
-            height: 60px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            z-index: 1000;
-            padding: 0;
-        }
-        
-        .back-button img {
-            width: 100%;
-            height: 100%;
-        }
-        
-        /* Скрываем все UI элементы */
-        .a-enter-vr,
-        .a-orientation-modal,
-        .a-dialog,
-        .arjs-loader,
-        .arjs-detect {
-            display: none !important;
-        }
-        
-        /* Стиль для курсора */
-        #cursor {
-            pointer-events: auto !important;
-        }
-        
-        /* Canvas на весь экран */
-        a-scene, canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        
-        /* Панель с информацией */
+        body { margin:0; overflow:hidden; width:100vw; height:100vh; }
+        .back-button { position: fixed; top:20px; left:20px; z-index:1000; background:transparent; border:none; cursor:pointer; width:60px; height:60px; padding:0; }
+        .back-button img { width:100%; height:100%; }
+
+        /* Панель информации (универсальная для двух POI) */
         .info-panel {
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
-            background: rgba(10, 10, 26, 0.9);
-            border-radius: 15px;
-            padding: 30px;
-            box-sizing: border-box;
+            transform: translate(-50%,-50%);
+            width: 320px;
+            max-width: 90%;
+            background: rgba(10,10,26,0.95);
+            color: #fff;
+            padding: 24px;
+            border-radius: 14px;
             display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
             z-index: 2000;
-            color: white;
-            font-family: 'Inter Tight', sans-serif;
             text-align: center;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(255, 95, 39, 0.3);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 2px solid rgba(255,95,39,0.18);
         }
-        
-        .info-panel.visible {
-            display: flex;
-        }
-        
-        .info-panel h2 {
-            font-size: 24px;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #ffffff 0%, #c2e9fb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .info-panel p {
-            font-size: 16px;
-            line-height: 1.4;
-            margin-bottom: 20px;
-            color: rgba(255, 255, 255, 0.9);
-        }
-        
-        .panel-close-button {
-            width: 100%;
-            height: 60px;
-            background-image: url('https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 500;
-            color: white;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
-        }
-        
-        .panel-close-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
-        
-        .panel-close-button span {
-            position: relative;
-            z-index: 1;
-        }
-        
-        /* Заглушка для кликов вне панели */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 1999;
-        }
-        
-        .overlay.visible {
-            display: block;
-        }
+        .info-panel.visible { display: block; }
+        .info-panel h2 { margin: 0 0 12px 0; font-size:20px; }
+        .info-panel p { margin: 0 0 18px 0; font-size:15px; color: rgba(255,255,255,0.9); }
+        .panel-close-button { width:100%; padding:14px; border-radius:10px; border:none; cursor:pointer; font-size:16px; font-weight:600; background-image: url('https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png'); background-size:cover; color:#fff; position:relative; overflow:hidden; }
+        .overlay { position: fixed; inset:0; background: rgba(0,0,0,0.5); display:none; z-index:1999; }
+        .overlay.visible { display:block; }
+
+        /* Скрываем элементы A-Frame UI по умолчанию */
+        .a-enter-vr, .a-orientation-modal, .a-dialog, .arjs-loader, .arjs-detect { display:none !important; }
+
     </style>
 </head>
-
 <body>
-    <!-- Простая кнопка назад -->
     <button class="back-button" onclick="goBack()" title="Назад">
         <img src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_Back.png" alt="Назад">
     </button>
-    
-    <!-- Панель с информацией -->
+
     <div class="overlay" id="overlay"></div>
+
     <div class="info-panel" id="infoPanel">
-        <div>
-            <h2>AR-квест</h2>
-            <p>Погрузитесь в атмосферу старой и современной Москвы сквозь шедевры русских художников.</p>
+        <div id="panelContent">
+            <h2 id="panelTitle">Заголовок</h2>
+            <p id="panelDesc">Описание...</p>
         </div>
-        <button class="panel-close-button" id="closePanel">
-            <span>Закрыть</span>
-        </button>
+        <button class="panel-close-button" id="closePanel"><span>Закрыть</span></button>
     </div>
 
-    <!-- AR сцена без лишних настроек -->
+    <!-- AR сцена -->
     <a-scene
         vr-mode-ui="enabled: false"
         loading-screen="enabled: false"
         embedded
         arjs="sourceType: webcam; debugUIEnabled: false;"
     >
-        <!-- Добавляем a-assets для правильной загрузки изображений -->
         <a-assets>
+            <!-- Спрайт POI (один и тот же для двух POI) -->
             <img id="poi-image" src="https://raw.githubusercontent.com/Artemvga/tenderhqz9vp/gh-pages/assets/sprites/PNG/POI_Dot.png">
         </a-assets>
-        
+
+        <!-- Маркер -->
         <a-marker
+            id="mainMarker"
             type="pattern"
             preset="custom"
             url="assets/marker.patt"
         >
+            <!-- Два POI, разные позиции / атрибуты data-* для разного текста -->
             <a-plane
-                id="poi-dot"
+                id="poi-dot-1"
+                class="clickable poi"
                 src="#poi-image"
-                position="0 0 0"
+                position="-0.15 0 0.05"
                 rotation="-90 0 0"
-                scale="0.3 0.3 0.3"
-                class="clickable"
-                click-handler
+                scale="0.28 0.28 0.28"
                 material="transparent: true; alphaTest: 0.5; side: double;"
+                data-title="Портрет 1 — Иван Иванов"
+                data-desc="Краткое описание портрета 1: техника, автор, год. Нажмите, чтобы узнать больше."
             ></a-plane>
+
+            <a-plane
+                id="poi-dot-2"
+                class="clickable poi"
+                src="#poi-image"
+                position="0.15 0 0.05"
+                rotation="-90 0 0"
+                scale="0.28 0.28 0.28"
+                material="transparent: true; alphaTest: 0.5; side: double;"
+                data-title="Пейзаж — Москва"
+                data-desc="Краткое описание пейзажа: сюжет, автор, локация. Нажмите, чтобы узнать больше."
+            ></a-plane>
+
+            <!-- (опционально) небольшая подсказка/рамка на самой метке -->
+            <a-entity position="0 0 0">
+                <!-- тут можно добавить 3D объекты, рамки и т.п. -->
+            </a-entity>
         </a-marker>
 
+        <!-- Камера + курсор.
+             Важно: курсор изначально скрыт (visible: false).
+             Мы будем показывать его только когда метка найдена (markerFound). -->
         <a-entity camera>
             <a-cursor
                 id="cursor"
                 color="#FF5F27"
                 raycaster="objects: .clickable; far: 20"
+                visible="false"
             ></a-cursor>
         </a-entity>
     </a-scene>
@@ -215,8 +126,107 @@
         function goBack() {
             window.location.href = "index.html";
         }
-        
-        // Обработка Escape
+
+        // --- UI панель ---
+        const infoPanel = document.getElementById('infoPanel');
+        const overlay = document.getElementById('overlay');
+        const panelTitle = document.getElementById('panelTitle');
+        const panelDesc = document.getElementById('panelDesc');
+        const closeBtn = document.getElementById('closePanel');
+
+        function openInfoPanel(title, desc) {
+            panelTitle.textContent = title || 'Информация';
+            panelDesc.textContent = desc || '';
+            infoPanel.classList.add('visible');
+            overlay.classList.add('visible');
+            overlay.onclick = closeInfoPanel;
+        }
+
+        function closeInfoPanel() {
+            infoPanel.classList.remove('visible');
+            overlay.classList.remove('visible');
+            overlay.onclick = null;
+        }
+
+        closeBtn.addEventListener('click', closeInfoPanel);
+
+        // --- Компонент клика который читает data-* и открывает панель ---
+        AFRAME.registerComponent('click-handler', {
+            init: function () {
+                const el = this.el;
+
+                // Нормальные события для A-Frame (cursor / touch / mouse)
+                el.addEventListener('click', function (evt) {
+                    // читаем данные с элемента (title/desc)
+                    const title = el.getAttribute('data-title') || 'Информация';
+                    const desc = el.getAttribute('data-desc') || '';
+                    openInfoPanel(title, desc);
+                });
+
+                el.addEventListener('touchstart', function (evt) {
+                    const title = el.getAttribute('data-title') || 'Информация';
+                    const desc = el.getAttribute('data-desc') || '';
+                    openInfoPanel(title, desc);
+                    evt.stopPropagation();
+                });
+
+                // отладочные события (по желанию)
+                el.addEventListener('mouseenter', function () {
+                    // можно добавить подсветку POI при наведении (опционно)
+                    // el.setAttribute('scale', '0.32 0.32 0.32');
+                });
+                el.addEventListener('mouseleave', function () {
+                    // el.setAttribute('scale', '0.28 0.28 0.28');
+                });
+            }
+        });
+
+        // Применяем компонент ко всем POI, у которых есть класс clickable
+        window.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.clickable').forEach(el => {
+                if (!el.components['click-handler']) {
+                    el.setAttribute('click-handler', '');
+                }
+            });
+        });
+
+        // --- Показ/скрытие курсора в зависимости от того, видна метка или нет ---
+        const marker = document.getElementById('mainMarker');
+        const cursor = document.getElementById('cursor');
+
+        // Безопасная функция для переключения видимости курсора
+        function setCursorVisible(visible) {
+            if (!cursor) return;
+            // a-cursor принимает атрибут visible (boolean). Меняем его.
+            cursor.setAttribute('visible', visible ? 'true' : 'false');
+        }
+
+        if (marker) {
+            marker.addEventListener('markerFound', () => {
+                console.log('Marker found -> show cursor');
+                setCursorVisible(true);
+
+                // Можно при появлении метки включить видимость самих POI (если хотите скрыть их по умолчанию)
+                document.querySelectorAll('.poi').forEach(p => p.setAttribute('visible', 'true'));
+            });
+
+            marker.addEventListener('markerLost', () => {
+                console.log('Marker lost -> hide cursor & close panel');
+                setCursorVisible(false);
+
+                // Скрываем панель, если она открыта (логично: когда картина ушла — панель закрывается)
+                closeInfoPanel();
+
+                // Если POI должны быть невидимы при отсутствии метки, можно убрать их:
+                // document.querySelectorAll('.poi').forEach(p => p.setAttribute('visible', 'false'));
+            });
+        }
+
+        // По умолчанию: если хотите, чтобы POI были невидимы до появления метки, можно:
+        // document.querySelectorAll('.poi').forEach(p => p.setAttribute('visible', 'false'));
+        // но в данном примере я оставил их видимыми (они рендерятся только когда метка видна в AR).
+
+        // Обработка Escape — если панель открыта, закрыть; иначе вернуться назад
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 if (infoPanel.classList.contains('visible')) {
@@ -226,126 +236,15 @@
                 }
             }
         });
-        
-        // Регистрация компонента для обработки кликов
-        AFRAME.registerComponent('click-handler', {
-            init: function () {
-                var el = this.el;
-                
-                // Обработка через курсор (основной способ)
-                el.addEventListener('click', function (evt) {
-                    console.log('POI clicked via cursor!');
-                    openInfoPanel();
-                });
-                
-                // Обработка через raycaster
-                el.addEventListener('raycaster-intersected', function (evt) {
-                    console.log('POI intersected by raycaster');
-                });
-                
-                // Для мобильных устройств - тап по экрану
-                el.addEventListener('touchstart', function (evt) {
-                    console.log('POI touched!');
-                    openInfoPanel();
-                    evt.stopPropagation();
-                });
-                
-                // Альтернативный способ для мобильных
-                el.addEventListener('mousedown', function (evt) {
-                    console.log('POI mousedown!');
-                    openInfoPanel();
-                });
-            }
-        });
-        
-        // Принудительно скрываем все UI элементы
+
+        // Некоторый defensive JS чтобы скрыть A-Frame UI элементы, если они появятся
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
-                // Скрываем все элементы A-Frame UI
-                const elements = document.querySelectorAll('.a-enter-vr, .a-orientation-modal, .a-dialog, .arjs-loader');
-                elements.forEach(el => {
-                    if (el) el.style.display = 'none';
-                });
+                const els = document.querySelectorAll('.a-enter-vr, .a-orientation-modal, .a-dialog, .arjs-loader');
+                els.forEach(e => { if (e) e.style.display = 'none'; });
             }, 100);
         });
-        
-        // Ждем полной загрузки сцены
-        document.querySelector('a-scene').addEventListener('loaded', function() {
-            console.log('Scene loaded');
-            
-            const poiElement = document.querySelector('#poi-dot');
-            const cursor = document.querySelector('#cursor');
-            
-            if (poiElement) {
-                console.log('POI element found and ready');
-                
-                // Дополнительная проверка кликабельности
-                poiElement.addEventListener('mouseenter', function() {
-                    console.log('Mouse entered POI');
-                });
-                
-                poiElement.addEventListener('mouseleave', function() {
-                    console.log('Mouse left POI');
-                });
-            }
-            
-            if (cursor) {
-                console.log('Cursor found and ready');
-                
-                // Добавляем обработчик на курсор для отладки
-                cursor.addEventListener('click', function(evt) {
-                    console.log('Cursor clicked!');
-                });
-            }
-            
-            // Глобальный обработчик для мобильных устройств
-            const scene = document.querySelector('a-scene');
-            scene.addEventListener('click', function(evt) {
-                console.log('Scene clicked, target:', evt.target);
-                
-                // Если клик был на POI
-                const target = evt.target;
-                if (target && target.id === 'poi-dot') {
-                    console.log('Opening panel via scene click');
-                    openInfoPanel();
-                }
-            });
-        });
-        
-        // Функции для работы с панелью информации
-        function openInfoPanel() {
-            console.log('Opening info panel');
-            const infoPanel = document.getElementById('infoPanel');
-            const overlay = document.getElementById('overlay');
-            
-            if (infoPanel && overlay) {
-                infoPanel.classList.add('visible');
-                overlay.classList.add('visible');
-                
-                // Добавляем обработчик клика на оверлей для закрытия панели
-                overlay.onclick = closeInfoPanel;
-            }
-        }
-        
-        function closeInfoPanel() {
-            console.log('Closing info panel');
-            const infoPanel = document.getElementById('infoPanel');
-            const overlay = document.getElementById('overlay');
-            
-            if (infoPanel && overlay) {
-                infoPanel.classList.remove('visible');
-                overlay.classList.remove('visible');
-                overlay.onclick = null;
-            }
-        }
-        
-        // Инициализация кнопки закрытия панели
-        window.addEventListener('load', function() {
-            const closeButton = document.getElementById('closePanel');
-            if (closeButton) {
-                closeButton.addEventListener('click', closeInfoPanel);
-            }
-        });
+
     </script>
 </body>
 </html>
