@@ -1,111 +1,231 @@
 <!doctype html>
 <html>
 <head>
-    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Сканирование</title>
+    
     <style>
-        /* Минимальные стили */
-        body {
+        body, html {
             margin: 0;
+            padding: 0;
             overflow: hidden;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
+            background: #000;
         }
         
-        /* Простая кнопка назад */
+        /* Кнопка назад */
         .back-button {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            width: 60px;
-            height: 60px;
-            background: transparent;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.5);
             border: none;
+            border-radius: 50%;
             cursor: pointer;
             z-index: 1000;
-            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .back-button img {
-            width: 100%;
-            height: 100%;
+            width: 60%;
+            height: 60%;
+            filter: invert(1);
         }
         
-        /* Скрываем все UI элементы */
-        .a-enter-vr,
-        .a-orientation-modal,
-        .a-dialog,
-        .arjs-loader,
-        .arjs-detect {
-            display: none !important;
-        }
-        
-        /* Canvas на весь экран */
-        a-scene, canvas {
+        /* Видео элемент */
+        #camera-video {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        
+        /* Индикатор */
+        .status {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 2;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        
+        /* Маркер поверх видео */
+        .marker-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            z-index: 3;
+            display: none;
+            pointer-events: none;
+        }
+        
+        .marker-overlay.visible {
+            display: block;
+        }
+        
+        .marker-text {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
 
 <body>
-    <!-- Простая кнопка назад -->
-    <button class="back-button" onclick="goBack()" title="Назад">
+    <!-- Кнопка назад -->
+    <button class="back-button" onclick="window.location.href='index.html'" title="Назад">
         <img src="assets/sprites/PNG/Button_Back.png" alt="Назад">
     </button>
 
-    <!-- AR сцена без лишних настроек -->
-    <a-scene
-        vr-mode-ui="enabled: false"
-        loading-screen="enabled: false"
-        embedded
-        arjs="sourceType: webcam; debugUIEnabled: false;"
-    >
-        <a-marker
-            type="pattern"
-            preset="custom"
-            url="assets/marker.patt"
-            raycaster="objects: .clickable"
-            cursor="rayOrigin: mouse"
-        >
-            <a-image
-                src="assets/sprites/PNG/POI_Dot.png"
-                position="0 0 0"
-                scale="0.5 0.5 0.5"
-                class="clickable"
-                gesture-handler="minScale: 0.25; maxScale: 1.5"
-            ></a-image>
-        </a-marker>
-
-        <a-entity camera></a-entity>
-    </a-scene>
+    <!-- Видео с камеры -->
+    <video id="camera-video" autoplay playsinline></video>
+    
+    <!-- Оверлей маркера -->
+    <div class="marker-overlay" id="markerOverlay">
+        <div class="marker-text">Наведите на маркер</div>
+    </div>
+    
+    <!-- Статус -->
+    <div class="status" id="status">
+        Запуск камеры...
+    </div>
 
     <script>
-        function goBack() {
-            window.location.href = "index.html";
-        }
-        
-        // Обработка Escape
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                goBack();
-            }
-        });
-        
-        // Принудительно скрываем все UI элементы
+        // Прямой доступ к камере
         document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                // Скрываем все элементы A-Frame UI
-                const elements = document.querySelectorAll('.a-enter-vr, .a-orientation-modal, .a-dialog, .arjs-loader');
-                elements.forEach(el => {
-                    if (el) el.style.display = 'none';
+            const video = document.getElementById('camera-video');
+            const status = document.getElementById('status');
+            const markerOverlay = document.getElementById('markerOverlay');
+            
+            // Параметры для камеры
+            const constraints = {
+                video: {
+                    facingMode: 'environment', // Используем заднюю камеру
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            };
+            
+            // Запрашиваем доступ к камере
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(function(stream) {
+                    // Камера доступна
+                    video.srcObject = stream;
+                    status.textContent = "Камера запущена. Наведите на маркер";
+                    
+                    // Через 2 секунды скрываем статус
+                    setTimeout(function() {
+                        status.style.opacity = '0';
+                        setTimeout(function() {
+                            status.style.display = 'none';
+                        }, 500);
+                    }, 2000);
+                    
+                    // Показываем оверлей маркера
+                    markerOverlay.classList.add('visible');
+                    
+                    // Симулируем обнаружение маркера (для демо)
+                    setTimeout(function() {
+                        markerOverlay.style.borderColor = '#00ff00';
+                        markerOverlay.style.boxShadow = '0 0 20px #00ff00';
+                        markerOverlay.querySelector('.marker-text').textContent = 'Маркер обнаружен!';
+                        
+                        // Добавляем изображение маркера
+                        const markerImg = document.createElement('img');
+                        markerImg.src = 'assets/sprites/PNG/POI_Dot.png';
+                        markerImg.style.width = '80%';
+                        markerImg.style.height = '80%';
+                        markerImg.style.position = 'absolute';
+                        markerImg.style.top = '10%';
+                        markerImg.style.left = '10%';
+                        markerImg.style.objectFit = 'contain';
+                        markerOverlay.appendChild(markerImg);
+                    }, 3000);
+                })
+                .catch(function(error) {
+                    // Ошибка доступа к камере
+                    console.error('Ошибка камеры:', error);
+                    
+                    if (error.name === 'NotAllowedError') {
+                        status.textContent = 'Доступ к камере запрещен';
+                    } else if (error.name === 'NotFoundError') {
+                        status.textContent = 'Камера не найдена';
+                    } else {
+                        status.textContent = 'Ошибка: ' + error.message;
+                    }
+                    
+                    // Кнопка для повтора
+                    const retryButton = document.createElement('button');
+                    retryButton.textContent = 'Повторить';
+                    retryButton.style.marginTop = '10px';
+                    retryButton.style.padding = '8px 16px';
+                    retryButton.style.background = '#4CAF50';
+                    retryButton.style.color = 'white';
+                    retryButton.style.border = 'none';
+                    retryButton.style.borderRadius = '5px';
+                    retryButton.style.cursor = 'pointer';
+                    
+                    retryButton.addEventListener('click', function() {
+                        location.reload();
+                    });
+                    
+                    status.appendChild(retryButton);
                 });
-            }, 100);
+            
+            // Обработка клавиши Escape
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    // Останавливаем камеру
+                    if (video.srcObject) {
+                        video.srcObject.getTracks().forEach(track => track.stop());
+                    }
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            // Остановка камеры при закрытии
+            window.addEventListener('beforeunload', function() {
+                if (video.srcObject) {
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                }
+            });
+            
+            // Предотвращаем контекстное меню
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+            
+            // Обработка касаний для фокуса
+            video.addEventListener('click', function() {
+                video.focus();
+            });
         });
     </script>
 </body>
