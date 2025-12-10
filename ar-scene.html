@@ -1,6 +1,8 @@
 <!doctype html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
@@ -40,11 +42,6 @@
         .arjs-loader,
         .arjs-detect {
             display: none !important;
-        }
-        
-        /* Стиль для курсора */
-        #cursor {
-            pointer-events: auto !important;
         }
         
         /* Canvas на весь экран */
@@ -173,42 +170,41 @@
         </button>
     </div>
 
-    <!-- AR сцена без лишних настроек -->
+    <!-- AR сцена с правильными настройками для мобильных -->
     <a-scene
         vr-mode-ui="enabled: false"
         loading-screen="enabled: false"
+        renderer="logarithmicDepthBuffer: true;"
         embedded
-        arjs="sourceType: webcam; debugUIEnabled: false;"
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best;"
+        gesture-detector
     >
         <!-- Добавляем a-assets для правильной загрузки изображений -->
         <a-assets>
-            <img id="poi-image" src="https://raw.githubusercontent.com/Artemvga/tenderhqz9vp/gh-pages/assets/sprites/PNG/POI_Dot.png">
+            <img id="poi-image" src="https://raw.githubusercontent.com/Artemvga/tenderhqz9vp/gh-pages/assets/sprites/PNG/POI_Dot.png" crossorigin="anonymous">
         </a-assets>
         
         <a-marker
             type="pattern"
             preset="custom"
             url="assets/marker.patt"
+            id="main-marker"
+            emitevents="true"
+            cursor="rayOrigin: mouse"
         >
-            <a-plane
+            <a-image
                 id="poi-dot"
                 src="#poi-image"
                 position="0 0 0"
                 rotation="-90 0 0"
-                scale="0.3 0.3 0.3"
+                scale="0.2 0.2 0.2"
                 class="clickable"
-                click-handler
-                material="transparent: true; alphaTest: 0.5; side: double;"
-            ></a-plane>
+                gesture-handler
+                material="side: double; transparent: true; alphaTest: 0.5;"
+            ></a-image>
         </a-marker>
 
-        <a-entity camera>
-            <a-cursor
-                id="cursor"
-                color="#FF5F27"
-                raycaster="objects: .clickable; far: 20"
-            ></a-cursor>
-        </a-entity>
+        <a-entity camera></a-entity>
     </a-scene>
 
     <script>
@@ -219,7 +215,8 @@
         // Обработка Escape
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
-                if (infoPanel.classList.contains('visible')) {
+                const infoPanel = document.getElementById('infoPanel');
+                if (infoPanel && infoPanel.classList.contains('visible')) {
                     closeInfoPanel();
                 } else {
                     goBack();
@@ -227,46 +224,32 @@
             }
         });
         
-        // Регистрация компонента для обработки кликов
-        AFRAME.registerComponent('click-handler', {
-            init: function () {
-                var el = this.el;
-                
-                // Обработка через курсор (основной способ)
-                el.addEventListener('click', function (evt) {
-                    console.log('POI clicked via cursor!');
-                    openInfoPanel();
-                });
-                
-                // Обработка через raycaster
-                el.addEventListener('raycaster-intersected', function (evt) {
-                    console.log('POI intersected by raycaster');
-                });
-                
-                // Для мобильных устройств - тап по экрану
-                el.addEventListener('touchstart', function (evt) {
-                    console.log('POI touched!');
-                    openInfoPanel();
-                    evt.stopPropagation();
-                });
-                
-                // Альтернативный способ для мобильных
-                el.addEventListener('mousedown', function (evt) {
-                    console.log('POI mousedown!');
-                    openInfoPanel();
-                });
-            }
-        });
-        
         // Принудительно скрываем все UI элементы
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
-                // Скрываем все элементы A-Frame UI
                 const elements = document.querySelectorAll('.a-enter-vr, .a-orientation-modal, .a-dialog, .arjs-loader');
                 elements.forEach(el => {
                     if (el) el.style.display = 'none';
                 });
             }, 100);
+            
+            // Запрос доступа к камере для мобильных устройств
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                }).then(function(stream) {
+                    console.log('Camera access granted');
+                    // Останавливаем поток, AR.js сам его откроет
+                    stream.getTracks().forEach(track => track.stop());
+                }).catch(function(err) {
+                    console.error('Camera access error:', err);
+                    alert('Пожалуйста, разрешите доступ к камере для работы AR');
+                });
+            }
         });
         
         // Ждем полной загрузки сцены
@@ -274,43 +257,58 @@
             console.log('Scene loaded');
             
             const poiElement = document.querySelector('#poi-dot');
-            const cursor = document.querySelector('#cursor');
+            const marker = document.querySelector('#main-marker');
             
             if (poiElement) {
-                console.log('POI element found and ready');
+                console.log('POI element found');
                 
-                // Дополнительная проверка кликабельности
-                poiElement.addEventListener('mouseenter', function() {
-                    console.log('Mouse entered POI');
-                });
-                
-                poiElement.addEventListener('mouseleave', function() {
-                    console.log('Mouse left POI');
-                });
-            }
-            
-            if (cursor) {
-                console.log('Cursor found and ready');
-                
-                // Добавляем обработчик на курсор для отладки
-                cursor.addEventListener('click', function(evt) {
-                    console.log('Cursor clicked!');
-                });
-            }
-            
-            // Глобальный обработчик для мобильных устройств
-            const scene = document.querySelector('a-scene');
-            scene.addEventListener('click', function(evt) {
-                console.log('Scene clicked, target:', evt.target);
-                
-                // Если клик был на POI
-                const target = evt.target;
-                if (target && target.id === 'poi-dot') {
-                    console.log('Opening panel via scene click');
+                // Обработчик клика для десктопа
+                poiElement.addEventListener('click', function(evt) {
+                    console.log('POI clicked!');
                     openInfoPanel();
-                }
-            });
+                    evt.stopPropagation();
+                });
+            }
+            
+            if (marker) {
+                console.log('Marker found');
+                
+                // Обработчик для мобильных устройств - клик на маркер
+                marker.addEventListener('click', function(evt) {
+                    console.log('Marker area clicked');
+                    openInfoPanel();
+                });
+            }
+            
+            // Глобальный обработчик тапа для мобильных
+            const canvas = document.querySelector('a-scene > canvas');
+            if (canvas) {
+                canvas.addEventListener('touchend', function(evt) {
+                    console.log('Canvas touched');
+                    // Проверяем виден ли маркер
+                    if (marker && marker.object3D.visible) {
+                        console.log('Marker is visible, opening panel');
+                        openInfoPanel();
+                    }
+                }, { passive: true });
+            }
         });
+        
+        // Отслеживание видимости маркера
+        let markerVisible = false;
+        const marker = document.querySelector('#main-marker');
+        
+        if (marker) {
+            marker.addEventListener('markerFound', function() {
+                console.log('Marker found!');
+                markerVisible = true;
+            });
+            
+            marker.addEventListener('markerLost', function() {
+                console.log('Marker lost!');
+                markerVisible = false;
+            });
+        }
         
         // Функции для работы с панелью информации
         function openInfoPanel() {
