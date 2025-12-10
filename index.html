@@ -2,29 +2,15 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>AR Experience</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR-квест «Образы Москвы»</title>
     
-    <!-- Подключение шрифтов -->
+    <!-- Предзагрузка критических ресурсов -->
+    <link rel="preload" href="assets/sprites/PNG/BG.png" as="image">
+    <link rel="preload" href="assets/sprites/PNG/Button_BG_Color.png" as="image">
+    
+    <!-- Минимальные шрифты -->
     <style>
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Regular.woff2') format('woff2');
-            font-weight: 400;
-            font-style: normal;
-            font-display: swap;
-        }
-        
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Medium.woff2') format('woff2');
-            font-weight: 500;
-            font-style: normal;
-            font-display: swap;
-        }
-        
         @font-face {
             font-family: 'Inter Tight';
             src: url('assets/font/InterTight-Bold.woff2') format('woff2');
@@ -32,113 +18,102 @@
             font-style: normal;
             font-display: swap;
         }
+        
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-Regular.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
     </style>
     
     <style>
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
         
         body {
             margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            min-height: 100dvh;
+            height: 100vh;
+            font-family: 'Inter Tight', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Фоновое изображение - твой PNG */
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-image: url('assets/sprites/PNG/BG.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
-            touch-action: manipulation;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            padding: 20px;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) 
-                     env(safe-area-inset-bottom) env(safe-area-inset-left);
+            background-color: #000; /* Fallback цвет */
+            z-index: 1;
         }
         
-        .content-wrapper {
-            text-align: center;
-            width: 100%;
-            max-width: 700px;
-            margin: 0 auto;
+        /* Контент поверх фона */
+        .content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            gap: 30px;
-            gap: clamp(20px, 4vh, 40px);
-        }
-        
-        /* Заголовок на двух строках */
-        .title-block {
-            margin: 0;
-            padding: 0;
-            line-height: 1;
-        }
-        
-        .title {
-            font-size: clamp(2.2rem, 7vw, 3.5rem);
+            align-items: center;
+            text-align: center;
+            padding: 20px;
             color: white;
-            margin: 0;
+        }
+        
+        /* Заголовок */
+        .title {
+            font-size: 3rem;
             font-weight: 700;
-            text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);
-            letter-spacing: -0.5px;
-            line-height: 1.1;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            line-height: 1.2;
         }
         
         .title-line {
             display: block;
         }
         
-        /* Основной текст под заголовком */
-        .description-block {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            max-width: 600px;
-        }
-        
+        /* Описание */
         .description {
-            font-size: clamp(1.2rem, 4vw, 1.6rem);
-            color: white;
-            line-height: 1.4;
-            margin: 0;
+            font-size: 1.4rem;
             font-weight: 400;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
-            letter-spacing: 0.2px;
+            max-width: 600px;
+            margin-bottom: 50px;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+            line-height: 1.5;
+            padding: 0 20px;
         }
         
-        /* Кнопка под текстом */
-        .button-block {
-            margin-top: 10px;
-        }
-        
+        /* Кнопка с твоим PNG */
         .button {
-            padding: clamp(18px, 4vw, 22px) clamp(40px, 8vw, 60px);
-            font-size: clamp(1.3rem, 4.5vw, 1.6rem);
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: white;
             background-image: url('assets/sprites/PNG/Button_BG_Color.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-color: transparent;
-            color: white;
             border: none;
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
-            min-height: 70px;
             min-width: 250px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
             position: relative;
             overflow: hidden;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
-            touch-action: manipulation;
+            transition: transform 0.2s;
         }
         
         .button::before {
@@ -148,170 +123,158 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.2);
             border-radius: 12px;
-            z-index: 1;
         }
         
         .button span {
             position: relative;
-            z-index: 2;
+            z-index: 1;
         }
         
-        .button:hover, .button:active {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
-            font-weight: 600;
+        .button:hover {
+            transform: scale(1.05);
         }
         
-        .button:hover::before, .button:active::before {
-            background-color: rgba(0, 0, 0, 0.2);
+        .button:active {
+            transform: scale(0.98);
         }
         
-        /* Адаптивные стили */
+        /* Адаптивность */
         @media (max-width: 768px) {
-            .content-wrapper {
-                gap: clamp(15px, 3vh, 25px);
-            }
-            
             .title {
-                font-size: clamp(1.8rem, 6vw, 2.8rem);
+                font-size: 2.2rem;
+                margin-bottom: 20px;
             }
             
             .description {
-                font-size: clamp(1rem, 3.8vw, 1.4rem);
-                line-height: 1.3;
+                font-size: 1.2rem;
+                margin-bottom: 40px;
             }
             
             .button {
-                min-height: 65px;
-                padding: 4vw 7vw;
-                font-size: clamp(1.1rem, 4vw, 1.4rem);
+                padding: 18px 40px;
+                font-size: 1.3rem;
                 min-width: 220px;
             }
         }
         
         @media (max-width: 480px) {
-            .content-wrapper {
-                gap: 20px;
-            }
-            
             .title {
-                font-size: 1.7rem;
+                font-size: 1.8rem;
             }
             
             .description {
-                font-size: 1.1rem;
-                line-height: 1.3;
+                font-size: 1rem;
+                margin-bottom: 30px;
+                padding: 0 10px;
             }
             
             .button {
-                min-height: 60px;
-                font-size: 1.2rem;
+                padding: 16px 35px;
+                font-size: 1.1rem;
                 min-width: 200px;
-                padding: 15px 40px;
             }
         }
         
-        @media (max-width: 320px) {
-            .title {
-                font-size: 1.5rem;
-            }
-            
-            .description {
-                font-size: 1rem;
-            }
-            
-            .button {
-                min-height: 55px;
-                font-size: 1.1rem;
-                min-width: 180px;
-                padding: 12px 35px;
-            }
+        /* Индикатор загрузки фона */
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: opacity 0.3s;
         }
         
-        /* Для высоких экранов */
-        @media (min-height: 800px) {
-            .content-wrapper {
-                gap: 40px;
-            }
-            
-            .title {
-                font-size: 3rem;
-            }
-            
-            .description {
-                font-size: 1.5rem;
-                line-height: 1.5;
-            }
-        }
-        
-        /* Для пейзажной ориентации */
-        @media (orientation: landscape) and (max-height: 600px) {
-            .content-wrapper {
-                gap: 15px;
-            }
-            
-            .title {
-                font-size: 2rem;
-            }
-            
-            .description {
-                font-size: 1rem;
-                line-height: 1.2;
-            }
-            
-            .button {
-                min-height: 50px;
-                font-size: 1.1rem;
-                min-width: 180px;
-                padding: 10px 30px;
-            }
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <div class="content-wrapper">
-        <!-- Заголовок на двух строках -->
-        <div class="title-block">
-            <h1 class="title">
-                <span class="title-line">AR-квест</span>
-                <span class="title-line">«Образы Москвы»</span>
-            </h1>
-        </div>
+    <!-- Индикатор загрузки -->
+    <div class="loading" id="loading">
+        Загрузка...
+    </div>
+    
+    <!-- Фоновое изображение - твой PNG -->
+    <div class="background" id="background"></div>
+    
+    <!-- Контент -->
+    <div class="content" id="content" style="display: none;">
+        <h1 class="title">
+            <span class="title-line">AR-квест</span>
+            <span class="title-line">«Образы Москвы»</span>
+        </h1>
         
-        <!-- Основной текст -->
-        <div class="description-block">
-            <p class="description">
-                Погрузитесь в атмосферу старой и современной Москвы сквозь шедевры русских художников.
-            </p>
-        </div>
+        <p class="description">
+            Погрузитесь в атмосферу старой и современной Москвы сквозь шедевры русских художников.
+        </p>
         
-        <!-- Кнопка -->
-        <div class="button-block">
-            <button class="button" onclick="goToARScene()">
-                <span>➤ Сканировать картину</span>
-            </button>
-        </div>
+        <button class="button" onclick="goToARScene()">
+            <span>➤ Сканировать картину</span>
+        </button>
     </div>
 
     <script>
         function goToARScene() {
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                window.location.href = "ar-scene.html";
-            } else {
-                alert("Ваше устройство не поддерживает AR функции. Пожалуйста, используйте современный браузер с поддержкой камеры.");
-            }
+            window.location.href = "ar-scene.html";
         }
         
-        // Предотвращение масштабирования на мобильных
-        document.addEventListener('touchmove', function(e) {
-            if (e.scale !== 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-        document.addEventListener('touchstart', function() {}, {passive: true});
+        // Оптимизированная загрузка
+        document.addEventListener('DOMContentLoaded', function() {
+            const loading = document.getElementById('loading');
+            const background = document.getElementById('background');
+            const content = document.getElementById('content');
+            
+            // Предзагрузка фонового изображения - твоего PNG
+            const bgImage = new Image();
+            bgImage.src = 'assets/sprites/PNG/BG.png';
+            
+            bgImage.onload = function() {
+                // Когда твой PNG фон загружен, показываем контент
+                setTimeout(function() {
+                    loading.classList.add('hidden');
+                    content.style.display = 'flex';
+                    
+                    // Предзагрузка кнопки PNG
+                    const buttonImage = new Image();
+                    buttonImage.src = 'assets/sprites/PNG/Button_BG_Color.png';
+                }, 300);
+            };
+            
+            bgImage.onerror = function() {
+                // Если твой PNG не загрузился, используем fallback
+                console.error('Не удалось загрузить фон:', bgImage.src);
+                background.style.backgroundColor = '#2c3e50';
+                loading.classList.add('hidden');
+                content.style.display = 'flex';
+            };
+            
+            // Таймаут на случай проблем с загрузкой
+            setTimeout(function() {
+                if (!loading.classList.contains('hidden')) {
+                    loading.classList.add('hidden');
+                    content.style.display = 'flex';
+                }
+            }, 3000);
+            
+            // Предотвращаем масштабирование на мобильных
+            document.addEventListener('touchmove', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        });
     </script>
 </body>
 </html>
