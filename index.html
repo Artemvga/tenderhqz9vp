@@ -1,72 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>AR Experience</title>
     
-    <!-- Подключение всех начертаний Inter Tight -->
+    <!-- Подключение шрифтов -->
     <style>
-        /* Thin - 100 */
         @font-face {
             font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Thin.woff2') format('woff2'),
-                 url('assets/font/InterTight-Thin.woff') format('woff');
-            font-weight: 100;
-            font-style: normal;
-            font-display: swap;
-        }
-        
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-ThinItalic.woff2') format('woff2'),
-                 url('assets/font/InterTight-ThinItalic.woff') format('woff');
-            font-weight: 100;
-            font-style: italic;
-            font-display: swap;
-        }
-        
-        /* ExtraLight - 200 */
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-ExtraLight.woff2') format('woff2'),
-                 url('assets/font/InterTight-ExtraLight.woff') format('woff');
-            font-weight: 200;
-            font-style: normal;
-            font-display: swap;
-        }
-        
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-ExtraLightItalic.woff2') format('woff2'),
-                 url('assets/font/InterTight-ExtraLightItalic.woff') format('woff');
-            font-weight: 200;
-            font-style: italic;
-            font-display: swap;
-        }
-        
-        /* Light - 300 */
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Light.woff2') format('woff2'),
-                 url('assets/font/InterTight-Light.woff') format('woff');
-            font-weight: 300;
-            font-style: normal;
-            font-display: swap;
-        }
-        
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-LightItalic.woff2') format('woff2'),
-                 url('assets/font/InterTight-LightItalic.woff') format('woff');
-            font-weight: 300;
-            font-style: italic;
-            font-display: swap;
-        }
-        
-        /* Regular - 400 */
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Regular.woff2') format('woff2'),
-                 url('assets/font/InterTight-Regular.woff') format('woff');
+            src: url('assets/font/InterTight-Regular.woff2') format('woff2');
             font-weight: 400;
             font-style: normal;
             font-display: swap;
@@ -74,18 +19,7 @@
         
         @font-face {
             font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Italic.woff2') format('woff2'),
-                 url('assets/font/InterTight-Italic.woff') format('woff');
-            font-weight: 400;
-            font-style: italic;
-            font-display: swap;
-        }
-        
-        /* Medium - 500 */
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Medium.woff2') format('woff2'),
-                 url('assets/font/InterTight-Medium.woff') format('woff');
+            src: url('assets/font/InterTight-Medium.woff2') format('woff2');
             font-weight: 500;
             font-style: normal;
             font-display: swap;
@@ -93,154 +27,99 @@
         
         @font-face {
             font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-MediumItalic.woff2') format('woff2'),
-                 url('assets/font/InterTight-MediumItalic.woff') format('woff');
-            font-weight: 500;
-            font-style: italic;
-            font-display: swap;
-        }
-        
-        /* SemiBold - 600 */
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Semibold.woff2') format('woff2'),
-                 url('assets/font/InterTight-Semibold.woff') format('woff');
-            font-weight: 600;
-            font-style: normal;
-            font-display: swap;
-        }
-        
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-SemiboldItalic.woff2') format('woff2'),
-                 url('assets/font/InterTight-SemiboldItalic.woff') format('woff');
-            font-weight: 600;
-            font-style: italic;
-            font-display: swap;
-        }
-        
-        /* Bold - 700 */
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Bold.woff2') format('woff2'),
-                 url('assets/font/InterTight-Bold.woff') format('woff');
+            src: url('assets/font/InterTight-Bold.woff2') format('woff2');
             font-weight: 700;
             font-style: normal;
-            font-display: swap;
-        }
-        
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-BoldItalic.woff2') format('woff2'),
-                 url('assets/font/InterTight-BoldItalic.woff') format('woff');
-            font-weight: 700;
-            font-style: italic;
-            font-display: swap;
-        }
-        
-        /* ExtraBold - 800 */
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-ExtraBold.woff2') format('woff2'),
-                 url('assets/font/InterTight-ExtraBold.woff') format('woff');
-            font-weight: 800;
-            font-style: normal;
-            font-display: swap;
-        }
-        
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-ExtraBoldItalic.woff2') format('woff2'),
-                 url('assets/font/InterTight-ExtraBoldItalic.woff') format('woff');
-            font-weight: 800;
-            font-style: italic;
-            font-display: swap;
-        }
-        
-        /* Black - 900 */
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Black.woff2') format('woff2'),
-                 url('assets/font/InterTight-Black.woff') format('woff');
-            font-weight: 900;
-            font-style: normal;
-            font-display: swap;
-        }
-        
-        @font-face {
-            font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-BlackItalic.woff2') format('woff2'),
-                 url('assets/font/InterTight-BlackItalic.woff') format('woff');
-            font-weight: 900;
-            font-style: italic;
             font-display: swap;
         }
     </style>
     
     <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
         body {
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            min-height: 100dvh;
             background-image: url('assets/sprites/PNG/BG.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            font-family: 'Inter Tight', sans-serif;
+            font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
+            touch-action: manipulation;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 20px;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) 
+                     env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
         
-        .container {
+        .content-wrapper {
             text-align: center;
-            padding: 50px 40px;
-            max-width: 600px;
-            width: 85%;
-            margin: 20px;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            gap: clamp(20px, 4vh, 40px);
         }
         
-        /* Главный заголовок - ExtraBold (800) */
+        /* Заголовок на двух строках */
+        .title-block {
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+        }
+        
         .title {
-            font-size: 2.8rem;
+            font-size: clamp(2.2rem, 7vw, 3.5rem);
             color: white;
-            margin: 0 0 25px 0;
-            line-height: 1.2;
-            font-weight: 800; /* ExtraBold */
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+            margin: 0;
+            font-weight: 700;
+            text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);
             letter-spacing: -0.5px;
+            line-height: 1.1;
         }
         
-        .title-line-1 {
+        .title-line {
             display: block;
-            font-size: 2.2rem;
-            color: white;
-            margin-bottom: 8px;
-            font-weight: 800; /* ExtraBold */
         }
         
-        .title-line-2 {
-            display: block;
-            font-size: 2.8rem;
-            color: white;
-            font-weight: 800; /* ExtraBold */
+        /* Основной текст под заголовком */
+        .description-block {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            max-width: 600px;
         }
         
-        /* Описание - Regular (400) */
         .description {
-            font-size: 1.3rem;
+            font-size: clamp(1.2rem, 4vw, 1.6rem);
             color: white;
-            line-height: 1.6;
-            margin: 0 0 35px 0;
-            padding: 0 10px;
-            text-align: center;
-            font-weight: 400; /* Regular */
-            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.6);
+            line-height: 1.4;
+            margin: 0;
+            font-weight: 400;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+            letter-spacing: 0.2px;
         }
         
-        /* Кнопка - Medium (500), при наведении SemiBold (600) */
+        /* Кнопка под текстом */
+        .button-block {
+            margin-top: 10px;
+        }
+        
         .button {
-            padding: 22px 50px;
-            font-size: 1.4rem;
+            padding: clamp(18px, 4vw, 22px) clamp(40px, 8vw, 60px);
+            font-size: clamp(1.3rem, 4.5vw, 1.6rem);
             background-image: url('assets/sprites/PNG/Button_BG_Color.png');
             background-size: cover;
             background-position: center;
@@ -250,16 +129,16 @@
             border: none;
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-            font-weight: 500; /* Medium */
+            transition: all 0.2s ease;
+            font-weight: 500;
             letter-spacing: 0.5px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
             min-height: 70px;
-            min-width: 200px;
+            min-width: 250px;
             position: relative;
             overflow: hidden;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+            touch-action: manipulation;
         }
         
         .button::before {
@@ -269,7 +148,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.2);
+            background-color: rgba(0, 0, 0, 0.25);
             border-radius: 12px;
             z-index: 1;
         }
@@ -279,43 +158,160 @@
             z-index: 2;
         }
         
-        .button:hover {
-            background-image: url('assets/sprites/PNG/Button_BG_Color.png');
-            background-size: cover;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-            font-weight: 600; /* SemiBold при наведении */
+        .button:hover, .button:active {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+            font-weight: 600;
         }
         
-        .button:hover::before {
-            background-color: rgba(0, 0, 0, 0.1);
+        .button:hover::before, .button:active::before {
+            background-color: rgba(0, 0, 0, 0.2);
         }
         
-        .button:active {
-            transform: translateY(-2px);
+        /* Адаптивные стили */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                gap: clamp(15px, 3vh, 25px);
+            }
+            
+            .title {
+                font-size: clamp(1.8rem, 6vw, 2.8rem);
+            }
+            
+            .description {
+                font-size: clamp(1rem, 3.8vw, 1.4rem);
+                line-height: 1.3;
+            }
+            
+            .button {
+                min-height: 65px;
+                padding: 4vw 7vw;
+                font-size: clamp(1.1rem, 4vw, 1.4rem);
+                min-width: 220px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .content-wrapper {
+                gap: 20px;
+            }
+            
+            .title {
+                font-size: 1.7rem;
+            }
+            
+            .description {
+                font-size: 1.1rem;
+                line-height: 1.3;
+            }
+            
+            .button {
+                min-height: 60px;
+                font-size: 1.2rem;
+                min-width: 200px;
+                padding: 15px 40px;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .title {
+                font-size: 1.5rem;
+            }
+            
+            .description {
+                font-size: 1rem;
+            }
+            
+            .button {
+                min-height: 55px;
+                font-size: 1.1rem;
+                min-width: 180px;
+                padding: 12px 35px;
+            }
+        }
+        
+        /* Для высоких экранов */
+        @media (min-height: 800px) {
+            .content-wrapper {
+                gap: 40px;
+            }
+            
+            .title {
+                font-size: 3rem;
+            }
+            
+            .description {
+                font-size: 1.5rem;
+                line-height: 1.5;
+            }
+        }
+        
+        /* Для пейзажной ориентации */
+        @media (orientation: landscape) and (max-height: 600px) {
+            .content-wrapper {
+                gap: 15px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .description {
+                font-size: 1rem;
+                line-height: 1.2;
+            }
+            
+            .button {
+                min-height: 50px;
+                font-size: 1.1rem;
+                min-width: 180px;
+                padding: 10px 30px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="title">
-            <span class="title-line-1">AR-квест</span>
-            <span class="title-line-2">«Образы Москвы»</span>
-        </h1>
+    <div class="content-wrapper">
+        <!-- Заголовок на двух строках -->
+        <div class="title-block">
+            <h1 class="title">
+                <span class="title-line">AR-квест</span>
+                <span class="title-line">«Образы Москвы»</span>
+            </h1>
+        </div>
         
-        <p class="description">
-            Погрузитесь в атмосферу старой и современной Москвы сквозь шедевры русских художников.
-        </p>
+        <!-- Основной текст -->
+        <div class="description-block">
+            <p class="description">
+                Погрузитесь в атмосферу старой и современной Москвы сквозь шедевры русских художников.
+            </p>
+        </div>
         
-        <button class="button" onclick="goToARScene()">
-            <span>Сканировать картину</span>
-        </button>
+        <!-- Кнопка -->
+        <div class="button-block">
+            <button class="button" onclick="goToARScene()">
+                <span>➤ Сканировать картину</span>
+            </button>
+        </div>
     </div>
 
     <script>
         function goToARScene() {
-            window.location.href = "ar-scene.html";
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                window.location.href = "ar-scene.html";
+            } else {
+                alert("Ваше устройство не поддерживает AR функции. Пожалуйста, используйте современный браузер с поддержкой камеры.");
+            }
         }
+        
+        // Предотвращение масштабирования на мобильных
+        document.addEventListener('touchmove', function(e) {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        document.addEventListener('touchstart', function() {}, {passive: true});
     </script>
 </body>
 </html>

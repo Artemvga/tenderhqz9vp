@@ -1,74 +1,197 @@
 <!doctype html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
     <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
     <style>
-        /* Стили для кнопки возврата */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        body {
+            margin: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            position: fixed;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) 
+                     env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        
+        /* Адаптивная кнопка возврата */
         .back-button {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            width: 120px;  /* В 2 раза больше (было 60px) */
-            height: 120px; /* В 2 раза больше (было 60px) */
-            background-color: transparent; /* Убираем фон */
+            top: max(20px, env(safe-area-inset-top));
+            left: max(20px, env(safe-area-inset-left));
+            width: clamp(50px, 12vw, 120px);
+            height: clamp(50px, 12vw, 120px);
+            background-color: transparent;
             border: none;
             cursor: pointer;
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            padding: 5px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
         
-        .back-button:hover {
+        .back-button:hover, .back-button:active {
             transform: scale(1.1);
-        }
-        
-        .back-button:active {
-            transform: scale(0.95);
+            background-color: rgba(0, 0, 0, 0.5);
         }
         
         .back-button img {
-            width: 100%;  /* Заполняем всю кнопку */
-            height: 100%; /* Заполняем всю кнопку */
+            width: 60%;
+            height: 60%;
             pointer-events: none;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        }
+        
+        /* Индикатор загрузки */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+            padding: 20px;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Инструкция */
+        .instructions {
+            position: fixed;
+            bottom: max(20px, env(safe-area-inset-bottom));
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 999;
+            border-radius: 10px;
+            margin: 0 20px;
+        }
+        
+        /* Медиа-запросы */
+        @media (max-width: 768px) {
+            .back-button {
+                top: 15px;
+                left: 15px;
+                width: 60px;
+                height: 60px;
+            }
+            
+            .instructions {
+                font-size: 0.8rem;
+                padding: 8px 15px;
+                margin: 0 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .back-button {
+                top: 10px;
+                left: 10px;
+                width: 50px;
+                height: 50px;
+            }
+            
+            .instructions {
+                font-size: 0.75rem;
+                padding: 6px 12px;
+                margin: 0 10px;
+            }
         }
     </style>
 </head>
 
-<body style="margin: 0; overflow: hidden;">
+<body>
     <!-- Кнопка возврата -->
-    <button class="back-button" onclick="goBack()" title="Вернуться назад">
+    <button class="back-button" onclick="goBack()" title="Вернуться назад" aria-label="Вернуться назад">
         <img src="assets/sprites/PNG/Button_Back.png" alt="Назад">
     </button>
+
+    <!-- Инструкция -->
+    <div class="instructions">
+        Наведите камеру на маркер картины
+    </div>
+
+    <!-- Экран загрузки -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p id="loadingText">Загрузка AR...</p>
+    </div>
 
     <a-scene
         vr-mode-ui="enabled: false;"
         loading-screen="enabled: false;"
         arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
-        id="scene"
         embedded
         gesture-detector
+        renderer="logarithmicDepthBuffer: true; precision: medium;"
     >
         <a-marker
-            id="animated-marker"
             type="pattern"
             preset="custom"
             url="assets/marker.patt"
             raycaster="objects: .clickable"
             emitevents="true"
             cursor="fuse: false; rayOrigin: mouse;"
-            id="markerA"
         >
-            <!-- Используем PNG спрайт -->
+            <!-- POI лежит на маркере -->
             <a-image
                 src="assets/sprites/PNG/POI_Dot.png"
-                scale="1 1 1"
+                position="0 1 0"
+                scale="0.5 0.5 0.5"
                 class="clickable"
-                rotation="-90 0 0"
+                rotation="90 0 0"
                 gesture-handler
             ></a-image>
         </a-marker>
@@ -81,12 +204,123 @@
             window.location.href = "index.html";
         }
         
-        // Добавляем обработку клавиши Escape для удобства
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                goBack();
+        // Улучшенная инициализация с таймаутами
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            const scene = document.querySelector('a-scene');
+            
+            let isLoaded = false;
+            let timeoutId;
+            
+            // Функция скрытия загрузки
+            function hideLoading() {
+                if (isLoaded) return;
+                isLoaded = true;
+                
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 300);
+                
+                // Очищаем таймаут
+                if (timeoutId) clearTimeout(timeoutId);
             }
+            
+            // 1. Проверка наличия A-Frame
+            if (!window.AFRAME) {
+                loadingText.textContent = 'Ошибка: A-Frame не загружен';
+                setTimeout(() => {
+                    loadingOverlay.innerHTML = 
+                        '<p style="color: #ff6b6b;">⚠️ Ошибка загрузки AR</p>' +
+                        '<p>Пожалуйста, проверьте интернет-соединение</p>' +
+                        '<button onclick="goBack()" style="margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Вернуться</button>';
+                }, 2000);
+                return;
+            }
+            
+            // 2. Событие загрузки сцены
+            scene.addEventListener('loaded', function() {
+                console.log('AR сцена загружена');
+                hideLoading();
+            });
+            
+            // 3. Событие начала рендеринга
+            scene.addEventListener('renderstart', function() {
+                console.log('AR рендеринг начат');
+                hideLoading();
+            });
+            
+            // 4. Таймаут на случай, если события не сработают
+            timeoutId = setTimeout(function() {
+                if (!isLoaded) {
+                    console.log('Таймаут загрузки AR');
+                    hideLoading();
+                }
+            }, 5000); // 5 секунд таймаут
+            
+            // 5. Обработка ошибок
+            scene.addEventListener('error', function(e) {
+                console.error('AR ошибка:', e.detail);
+                
+                let errorMessage = 'Неизвестная ошибка AR';
+                if (e.detail && e.detail.error) {
+                    if (e.detail.error.name === 'NotAllowedError') {
+                        errorMessage = 'Доступ к камере запрещен';
+                    } else if (e.detail.error.name === 'NotFoundError') {
+                        errorMessage = 'Камера не найдена';
+                    } else if (e.detail.error.name === 'NotReadableError') {
+                        errorMessage = 'Камера недоступна';
+                    }
+                }
+                
+                loadingText.textContent = 'Ошибка: ' + errorMessage;
+                setTimeout(() => {
+                    loadingOverlay.innerHTML = 
+                        '<p style="color: #ff6b6b;">⚠️ ' + errorMessage + '</p>' +
+                        '<p>Проверьте разрешения камеры</p>' +
+                        '<button onclick="goBack()" style="margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Вернуться</button>';
+                }, 2000);
+            });
+            
+            // 6. Проверка WebGL поддержки
+            if (!hasWebGLSupport()) {
+                loadingText.textContent = 'Ошибка: WebGL не поддерживается';
+                setTimeout(() => {
+                    loadingOverlay.innerHTML = 
+                        '<p style="color: #ff6b6b;">⚠️ WebGL не поддерживается</p>' +
+                        '<p>Ваш браузер не поддерживает 3D графику</p>' +
+                        '<button onclick="goBack()" style="margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Вернуться</button>';
+                }, 2000);
+                return;
+            }
+            
+            // 7. Отслеживание видимости страницы
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    // Пауза при скрытии страницы
+                    if (timeoutId) clearTimeout(timeoutId);
+                }
+            });
+            
+            // Обработка клавиши Escape
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    goBack();
+                }
+            });
         });
+        
+        // Проверка WebGL
+        function hasWebGLSupport() {
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                return !!(window.WebGLRenderingContext && gl);
+            } catch (e) {
+                return false;
+            }
+        }
     </script>
 </body>
 </html>
