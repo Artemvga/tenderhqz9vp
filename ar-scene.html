@@ -6,12 +6,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Screen Orientation API -->
     <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
     <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
     <style>
-        /* Сброс всех стилей */
+        /* Полный сброс стилей */
         * {
             margin: 0;
             padding: 0;
@@ -23,47 +24,54 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+            outline: none;
         }
         
         html, body {
             width: 100%;
             height: 100%;
-            overflow: hidden;
-            position: fixed;
+            overflow: hidden !important;
+            position: fixed !important;
             background: #000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) 
-                     env(safe-area-inset-bottom) env(safe-area-inset-left);
+            /* Безопасные зоны для iPhone */
+            padding-top: env(safe-area-inset-top) !important;
+            padding-bottom: env(safe-area-inset-bottom) !important;
+            padding-left: env(safe-area-inset-left) !important;
+            padding-right: env(safe-area-inset-right) !important;
         }
         
-        /* Кнопка возврата - минималистичная */
+        /* Кнопка возврата */
         .back-button {
             position: fixed;
             top: max(15px, env(safe-area-inset-top));
             left: max(15px, env(safe-area-inset-left));
             width: 50px;
             height: 50px;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6);
             border: none;
             border-radius: 50%;
             cursor: pointer;
-            z-index: 1000;
+            z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
         
         .back-button:hover, .back-button:active {
-            background-color: rgba(0, 0, 0, 0.7);
-            transform: scale(1.1);
+            background-color: rgba(0, 0, 0, 0.8);
+            transform: scale(1.05);
         }
         
         .back-button img {
@@ -72,7 +80,7 @@
             filter: invert(1) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
         }
         
-        /* Инструкция - минимальная */
+        /* Инструкция */
         .instructions {
             position: fixed;
             bottom: max(15px, env(safe-area-inset-bottom));
@@ -81,13 +89,14 @@
             text-align: center;
             color: white;
             font-size: 14px;
-            padding: 8px 12px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 999;
-            border-radius: 8px;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 9999;
+            border-radius: 10px;
             pointer-events: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         /* Индикатор загрузки */
@@ -102,11 +111,12 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
+            z-index: 20000;
             color: white;
             font-size: 16px;
             text-align: center;
             transition: opacity 0.3s ease;
+            padding: 20px;
         }
         
         .loading-spinner {
@@ -116,44 +126,92 @@
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
-        /* Скрываем все дебаг UI от A-Frame и AR.js */
-        .a-enter-vr, 
+        /* Сообщение о вертикальной ориентации */
+        .orientation-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 30000;
+            padding: 30px;
+            font-size: 18px;
+        }
+        
+        .orientation-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: rotateIcon 2s ease-in-out infinite;
+        }
+        
+        @keyframes rotateIcon {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+        }
+        
+        /* Скрываем ВСЕ UI элементы A-Frame и AR.js */
+        .a-enter-vr,
         .a-orientation-modal,
-        .a-canvas-overlay,
-        .a-loader-title,
         .a-dialog,
-        .a-enter-vr-button,
-        [data-a-position="0 2 -3"] {
+        .a-loader-title,
+        .a-canvas-overlay,
+        .arjs-loader,
+        .arjs-detect,
+        .arjs-debug,
+        .__arjs_devTools,
+        [data-a-position],
+        [class*="a-enter"],
+        [class*="arjs"]:not(a-scene):not(a-marker):not(a-image):not(a-entity) {
             display: none !important;
             opacity: 0 !important;
             visibility: hidden !important;
+            width: 0 !important;
+            height: 0 !important;
+            pointer-events: none !important;
         }
         
-        /* Скрываем дебаг AR.js если есть */
-        .arjs-loader,
-        .arjs-detect,
-        .arjs-debug {
-            display: none !important;
-        }
-        
-        /* Стили для a-scene чтобы заполнял весь экран */
-        a-scene {
+        /* Основной canvas должен быть на весь экран */
+        a-scene, canvas {
             position: absolute !important;
             top: 0 !important;
             left: 0 !important;
             width: 100% !important;
             height: 100% !important;
             z-index: 1 !important;
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         
-        /* Для мобильных */
+        /* Принудительная вертикальная ориентация */
+        @media screen and (min-width: 320px) and (max-width: 767px) and (orientation: landscape) {
+            html {
+                transform: rotate(-90deg);
+                transform-origin: left top;
+                width: 100vh;
+                height: 100vw;
+                overflow-x: hidden;
+                position: absolute;
+                top: 100%;
+                left: 0;
+            }
+        }
+        
+        /* Медиазапросы */
         @media (max-width: 768px) {
             .back-button {
                 width: 45px;
@@ -169,7 +227,7 @@
             
             .instructions {
                 font-size: 13px;
-                padding: 6px 10px;
+                padding: 8px 12px;
                 bottom: max(12px, env(safe-area-inset-bottom));
                 left: 12px;
                 right: 12px;
@@ -180,6 +238,8 @@
             .back-button {
                 width: 40px;
                 height: 40px;
+                top: max(10px, env(safe-area-inset-top));
+                left: max(10px, env(safe-area-inset-left));
             }
             
             .back-button img {
@@ -189,10 +249,16 @@
             
             .instructions {
                 font-size: 12px;
+                padding: 7px 10px;
             }
             
             .loading-overlay {
                 font-size: 14px;
+            }
+            
+            .orientation-message {
+                font-size: 16px;
+                padding: 20px;
             }
         }
     </style>
@@ -209,31 +275,33 @@
         Наведите камеру на маркер картины
     </div>
 
+    <!-- Сообщение о вертикальной ориентации -->
+    <div class="orientation-message" id="orientationMessage">
+        <div class="orientation-icon">📱</div>
+        <h2>Пожалуйста, поверните устройство</h2>
+        <p>Приложение работает только в вертикальной ориентации</p>
+        <p style="margin-top: 20px; font-size: 14px; color: #aaa;">Поверните телефон вертикально для продолжения</p>
+    </div>
+
     <!-- Экран загрузки -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
         <p>Загрузка AR...</p>
     </div>
 
-    <!-- A-Frame сцена с отключенным UI -->
+    <!-- A-Frame сцена -->
     <a-scene
         vr-mode-ui="enabled: false"
         loading-screen="enabled: false"
         embedded
-        renderer="antialias: true; alpha: false; logarithmicDepthBuffer: false;"
+        renderer="antialias: true; alpha: false;"
         
         arjs="
             sourceType: webcam;
-            sourceWidth: 1280;
-            sourceHeight: 960;
-            displayWidth: 1280;
-            displayHeight: 960;
-            trackingMethod: best;
             debugUIEnabled: false;
+            trackingMethod: best;
             detectionMode: mono_and_matrix;
             matrixCodeType: 3x3;
-            maxDetectionRate: 60;
-            cameraParametersUrl: '';
         "
     >
         <!-- Маркер -->
@@ -263,11 +331,53 @@
             window.location.href = "index.html";
         }
         
+        // Проверка и блокировка ориентации
+        function checkOrientation() {
+            const orientationMessage = document.getElementById('orientationMessage');
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Проверяем текущую ориентацию
+                const isLandscape = window.innerWidth > window.innerHeight;
+                
+                if (isLandscape) {
+                    // Показываем сообщение о вертикальной ориентации
+                    orientationMessage.style.display = 'flex';
+                    // Блокируем все остальное
+                    document.querySelector('.loading-overlay').style.display = 'none';
+                    document.querySelector('.instructions').style.display = 'none';
+                    document.querySelector('.back-button').style.display = 'none';
+                    document.querySelector('a-scene').style.display = 'none';
+                    return false;
+                } else {
+                    // Вертикальная ориентация - все ок
+                    orientationMessage.style.display = 'none';
+                    return true;
+                }
+            }
+            
+            return true; // На десктопе не проверяем
+        }
+        
+        // Обработчик изменения ориентации
+        function handleOrientationChange() {
+            checkOrientation();
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             const loadingOverlay = document.getElementById('loadingOverlay');
             const scene = document.querySelector('a-scene');
             
-            // Функция скрытия загрузки
+            // 1. Проверяем ориентацию при загрузке
+            if (!checkOrientation()) {
+                return; // Прерываем если горизонтально
+            }
+            
+            // 2. Добавляем обработчик изменения ориентации
+            window.addEventListener('resize', handleOrientationChange);
+            window.addEventListener('orientationchange', handleOrientationChange);
+            
+            // 3. Функция скрытия загрузки
             function hideLoading() {
                 loadingOverlay.style.opacity = '0';
                 setTimeout(() => {
@@ -275,22 +385,58 @@
                 }, 300);
             }
             
-            // 1. Событие загрузки сцены
+            // 4. Событие загрузки сцены
             scene.addEventListener('loaded', function() {
                 console.log('AR сцена загружена');
-                setTimeout(hideLoading, 1000);
+                
+                // Принудительно скрываем все возможные UI элементы
+                setTimeout(function() {
+                    const elementsToHide = [
+                        '.a-enter-vr',
+                        '.a-orientation-modal',
+                        '.a-dialog',
+                        '.arjs-loader',
+                        '.arjs-detect',
+                        '.arjs-debug',
+                        '.__arjs_devTools'
+                    ];
+                    
+                    elementsToHide.forEach(selector => {
+                        const el = document.querySelector(selector);
+                        if (el) {
+                            el.style.display = 'none';
+                            el.style.opacity = '0';
+                            el.style.visibility = 'hidden';
+                            el.style.width = '0';
+                            el.style.height = '0';
+                        }
+                    });
+                    
+                    // Убеждаемся что canvas на весь экран
+                    const canvas = document.querySelector('canvas');
+                    if (canvas) {
+                        canvas.style.position = 'absolute';
+                        canvas.style.top = '0';
+                        canvas.style.left = '0';
+                        canvas.style.width = '100%';
+                        canvas.style.height = '100%';
+                        canvas.style.zIndex = '1';
+                    }
+                }, 100);
+                
+                setTimeout(hideLoading, 800);
             });
             
-            // 2. Событие начала рендеринга
+            // 5. Событие начала рендеринга
             scene.addEventListener('renderstart', function() {
                 console.log('AR рендеринг начат');
-                setTimeout(hideLoading, 500);
+                setTimeout(hideLoading, 300);
             });
             
-            // 3. Таймаут на всякий случай
+            // 6. Таймаут на всякий случай
             setTimeout(hideLoading, 3000);
             
-            // 4. Обработка ошибок
+            // 7. Обработка ошибок
             scene.addEventListener('error', function(e) {
                 console.error('AR ошибка:', e.detail);
                 loadingOverlay.innerHTML = 
@@ -299,49 +445,47 @@
                     '<button onclick="goBack()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Вернуться</button>';
             });
             
-            // 5. Обработка клавиши Escape
+            // 8. Обработка клавиши Escape
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape') {
                     goBack();
                 }
             });
             
-            // 6. Принудительно скрываем все лишние UI элементы
-            setTimeout(function() {
-                // Скрываем все элементы A-Frame UI
-                const aframeUI = document.querySelectorAll('.a-enter-vr, .a-orientation-modal, .a-dialog, .arjs-loader, .arjs-debug');
-                aframeUI.forEach(el => {
-                    if (el) {
-                        el.style.display = 'none';
-                        el.style.opacity = '0';
-                        el.style.visibility = 'hidden';
-                    }
-                });
-                
-                // Убеждаемся, что canvas занимает весь экран
-                const canvas = document.querySelector('canvas');
-                if (canvas) {
-                    canvas.style.position = 'absolute';
-                    canvas.style.top = '0';
-                    canvas.style.left = '0';
-                    canvas.style.width = '100%';
-                    canvas.style.height = '100%';
-                    canvas.style.zIndex = '1';
-                }
-            }, 100);
-            
-            // 7. Предотвращаем контекстное меню
+            // 9. Предотвращаем контекстное меню
             document.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
             });
             
-            // 8. Предотвращаем масштабирование
+            // 10. Предотвращаем масштабирование
             document.addEventListener('touchmove', function(e) {
                 if (e.touches.length > 1) {
                     e.preventDefault();
                 }
             }, { passive: false });
+            
+            // 11. Предотвращаем переворот экрана на iOS
+            if (screen.orientation && screen.orientation.lock) {
+                try {
+                    screen.orientation.lock('portrait').catch(function() {
+                        console.log('Блокировка ориентации не поддерживается');
+                    });
+                } catch (error) {
+                    console.log('Ошибка блокировки ориентации:', error);
+                }
+            }
+            
+            // 12. Альтернативный способ блокировки ориентации для iOS
+            if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+                document.addEventListener('touchmove', function(e) {
+                    e.preventDefault();
+                }, { passive: false });
+            }
         });
+        
+        // Проверка ориентации при изменении размера
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
     </script>
 </body>
 </html>
