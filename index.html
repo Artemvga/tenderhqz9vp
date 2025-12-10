@@ -9,7 +9,7 @@
     <style>
         @font-face {
             font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Bold.woff2') format('woff2');
+            src: url('https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/font/InterTight-Bold.woff2') format('woff2');
             font-weight: 700;
             font-style: normal;
             font-display: swap;
@@ -17,7 +17,7 @@
         
         @font-face {
             font-family: 'Inter Tight';
-            src: url('assets/font/InterTight-Regular.woff2') format('woff2');
+            src: url('https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/font/InterTight-Regular.woff2') format('woff2');
             font-weight: 400;
             font-style: normal;
             font-display: swap;
@@ -357,8 +357,8 @@
 </head>
 <body>
     <!-- Скрытые изображения для предзагрузки -->
-    <img class="preload-image" id="preloadBg" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/BG.png" alt="preload">
-    <img class="preload-image" id="preloadButton" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png" alt="preload">
+    <img class="preload-image" id="preloadBg" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/BG.png" alt="preload" crossorigin="anonymous">
+    <img class="preload-image" id="preloadButton" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png" alt="preload" crossorigin="anonymous">
     
     <!-- Красивый экран загрузки -->
     <div class="loading" id="loading">
@@ -455,11 +455,13 @@
             return false;
         }
         
-        // Основная загрузка
+        // Основная загрузка - оптимизированная
         document.addEventListener('DOMContentLoaded', function() {
-            // Проверяем кэш ДО всего
+            // НЕМЕДЛЕННО показываем контент, если изображения в кэше
             if (quickLoadIfCached()) {
-                return; // Выходим если использовали кэш
+                // Сразу добавляем обработчик клика
+                document.getElementById('startButton').addEventListener('click', goToARScene);
+                return;
             }
             
             const loading = document.getElementById('loading');
@@ -467,151 +469,127 @@
             const content = document.getElementById('content');
             const startButton = document.getElementById('startButton');
             
-            // Элементы предзагрузки
-            const preloadBg = document.getElementById('preloadBg');
-            const preloadButton = document.getElementById('preloadButton');
-            
-            // Счетчик загруженных изображений
-            let loadedImages = 0;
-            const totalImages = 2;
-            let hasError = false;
-            
-            function imageLoaded() {
-                loadedImages++;
-                
-                if (loadedImages === totalImages && !hasError) {
-                    // Отмечаем что изображения кэшированы
-                    markImagesAsCached();
-                    
-                    // ВСЕ изображения полностью загружены
-                    setTimeout(function() {
-                        // 1. Устанавливаем фон
-                        background.style.backgroundImage = `url('${preloadBg.src}')`;
-                        background.classList.add('loaded');
-                        
-                        // 2. Устанавливаем фон кнопки
-                        startButton.style.backgroundImage = `url('${preloadButton.src}')`;
-                        
-                        // 3. Скрываем экран загрузки
-                        setTimeout(function() {
-                            loading.classList.add('hidden');
-                            
-                            // 4. Показываем контент
-                            setTimeout(function() {
-                                content.classList.add('visible');
-                            }, 300);
-                        }, 400);
-                    }, 100);
-                }
-            }
-            
-            function imageError() {
-                hasError = true;
-                loadedImages++;
-                
-                // Fallback на случай ошибки
-                if (preloadBg === this) {
-                    console.error('Не удалось загрузить фон с GitHub');
-                    background.style.backgroundColor = '#0a0a1a';
-                    background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
-                } else {
-                    console.error('Не удалось загрузить кнопку с GitHub');
-                    startButton.style.backgroundImage = 
-                        'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
-                }
-                
-                if (loadedImages === totalImages) {
-                    // Все равно показываем контент
-                    setTimeout(function() {
-                        background.classList.add('loaded');
-                        loading.classList.add('hidden');
-                        setTimeout(function() {
-                            content.classList.add('visible');
-                        }, 300);
-                    }, 500);
-                }
-            }
-            
-            // Обработчики загрузки изображений
-            if (preloadBg.complete && preloadBg.naturalHeight !== 0) {
-                // Изображение уже загружено (из кэша)
-                console.log('Фон уже загружен из кэша браузера');
-                imageLoaded();
-            } else {
-                preloadBg.onload = imageLoaded;
-                preloadBg.onerror = imageError;
-            }
-            
-            if (preloadButton.complete && preloadButton.naturalHeight !== 0) {
-                // Изображение уже загружено
-                console.log('Кнопка уже загружена из кэша браузера');
-                imageLoaded();
-            } else {
-                preloadButton.onload = imageLoaded;
-                preloadButton.onerror = imageError;
-            }
-            
-            // Добавляем обработчик клика на кнопку
+            // УЖЕ показали загрузочный экран - не ждем
+            // Сразу добавляем обработчик клика
             startButton.addEventListener('click', goToARScene);
             
-            // Таймаут на случай проблем с загрузкой
+            // Начинаем загрузку фона ПАРАЛЛЕЛЬНО с показом загрузочного экрана
+            const bgUrl = 'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/BG.png';
+            const buttonUrl = 'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png';
+            
+            // Загружаем изображения параллельно
+            Promise.all([
+                loadImage(bgUrl),
+                loadImage(buttonUrl)
+            ]).then(function(results) {
+                const [bgImg, buttonImg] = results;
+                
+                // Отмечаем что изображения кэшированы
+                markImagesAsCached();
+                
+                // Устанавливаем фон СРАЗУ
+                background.style.backgroundImage = `url('${bgImg.src}')`;
+                background.classList.add('loaded');
+                
+                // Устанавливаем фон кнопки
+                startButton.style.backgroundImage = `url('${buttonImg.src}')`;
+                
+                // Минимальная задержка для плавности
+                setTimeout(function() {
+                    loading.classList.add('hidden');
+                    setTimeout(function() {
+                        content.classList.add('visible');
+                    }, 200);
+                }, 300);
+                
+            }).catch(function(error) {
+                console.error('Ошибка загрузки:', error);
+                
+                // Fallback на градиенты при ошибке
+                background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
+                background.classList.add('loaded');
+                
+                startButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
+                
+                // Все равно показываем контент
+                setTimeout(function() {
+                    loading.classList.add('hidden');
+                    setTimeout(function() {
+                        content.classList.add('visible');
+                    }, 200);
+                }, 300);
+            });
+            
+            // Функция для загрузки изображения с таймаутом
+            function loadImage(url) {
+                return new Promise(function(resolve, reject) {
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    
+                    const timeoutId = setTimeout(function() {
+                        reject(new Error('Таймаут загрузки изображения'));
+                        img.onload = img.onerror = null;
+                    }, 5000); // 5 секунд таймаут
+                    
+                    img.onload = function() {
+                        clearTimeout(timeoutId);
+                        resolve(img);
+                    };
+                    
+                    img.onerror = function(err) {
+                        clearTimeout(timeoutId);
+                        reject(err);
+                    };
+                    
+                    img.src = url;
+                    
+                    // Если изображение уже загружено (из кэша)
+                    if (img.complete && img.naturalHeight !== 0) {
+                        clearTimeout(timeoutId);
+                        resolve(img);
+                    }
+                });
+            }
+            
+            // Предзагрузка других ресурсов (не блокирующая)
+            setTimeout(function() {
+                const otherResources = [
+                    'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_Back.png',
+                    'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/POI_Dot.png',
+                    'https://raw.githubusercontent.com/Artemvga/tenderhqz9vp/gh-pages/assets/marker.patt'
+                ];
+                
+                otherResources.forEach(url => {
+                    if (url.endsWith('.patt')) {
+                        // Загрузка паттерна
+                        fetch(url, {mode: 'cors'});
+                    } else {
+                        // Загрузка изображений
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        img.src = url;
+                    }
+                });
+            }, 100);
+            
+            // Таймаут на случай проблем с загрузкой (сокращен до 3 секунд)
             setTimeout(function() {
                 if (!loading.classList.contains('hidden') && !loading.classList.contains('instant-hidden')) {
                     console.log('Таймаут загрузки, показываем контент');
                     
-                    // Пытаемся использовать то, что загрузилось
-                    if (preloadBg.src && preloadBg.naturalHeight !== 0) {
-                        background.style.backgroundImage = `url('${preloadBg.src}')`;
-                    } else {
-                        background.style.backgroundColor = '#0a0a1a';
-                        background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
-                    }
-                    
-                    if (preloadButton.src && preloadButton.naturalHeight !== 0) {
-                        startButton.style.backgroundImage = `url('${preloadButton.src}')`;
-                    } else {
-                        startButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
-                    }
-                    
+                    // Fallback на градиенты
+                    background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
                     background.classList.add('loaded');
+                    
+                    startButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
+                    
                     loading.classList.add('hidden');
                     
                     setTimeout(function() {
                         content.classList.add('visible');
-                    }, 300);
+                    }, 200);
                 }
-            }, 8000); // 8 секунд максимум
-            
-            // Preload других спрайтов (не блокирующих)
-            setTimeout(function() {
-                const otherSprites = [
-                    'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_Back.png',
-                    'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/POI_Dot.png'
-                ];
-                
-                otherSprites.forEach(url => {
-                    const img = new Image();
-                    img.src = url;
-                });
-            }, 500);
-            
-            // Предотвращаем масштабирование на мобильных
-            document.addEventListener('touchmove', function(e) {
-                if (e.touches.length > 1) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-            
-            // Кэшируем страницу для оффлайн использования
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                    navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                        console.log('ServiceWorker зарегистрирован');
-                    }).catch(function(err) {
-                        console.log('ServiceWorker ошибка:', err);
-                    });
-                });
-            }
+            }, 3000); // Уменьшено с 8 до 3 секунд
         });
         
         // При возврате на страницу проверяем кэш

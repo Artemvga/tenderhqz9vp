@@ -56,7 +56,7 @@
 <body>
     <!-- Простая кнопка назад -->
     <button class="back-button" onclick="goBack()" title="Назад">
-        <img src="assets/sprites/PNG/Button_Back.png" alt="Назад">
+        <img src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_Back.png" alt="Назад">
     </button>
 
     <!-- AR сцена без лишних настроек -->
@@ -66,18 +66,24 @@
         embedded
         arjs="sourceType: webcam; debugUIEnabled: false;"
     >
+        <a-assets>
+            <!-- Предзагрузка ассетов -->
+            <img id="poi-dot" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/POI_Dot.png" crossorigin="anonymous">
+        </a-assets>
+        
         <a-marker
             type="pattern"
             preset="custom"
-            url="assets/marker.patt"
+            url="https://raw.githubusercontent.com/Artemvga/tenderhqz9vp/gh-pages/assets/marker.patt"
             raycaster="objects: .clickable"
             cursor="rayOrigin: mouse"
         >
             <a-image
-                src="assets/sprites/PNG/POI_Dot.png"
+                src="#poi-dot"
                 position="0 0 0"
                 scale="0.5 0.5 0.5"
                 class="clickable"
+                rotation="-90 0 0"
                 gesture-handler="minScale: 0.25; maxScale: 1.5"
             ></a-image>
         </a-marker>
