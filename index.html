@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR-квест «Образы Москвы»</title>
     
-    <!-- Предзагрузка критических ресурсов -->
-    <link rel="preload" href="assets/sprites/PNG/BG.png" as="image">
-    <link rel="preload" href="assets/sprites/PNG/Button_BG_Color.png" as="image">
-    
     <!-- Минимальные шрифты -->
     <style>
         @font-face {
@@ -41,21 +37,36 @@
             font-family: 'Inter Tight', sans-serif;
             overflow: hidden;
             position: relative;
+            background: #0a0a1a;
         }
         
-        /* Фоновое изображение - твой PNG */
+        /* Скрытое изображение для загрузки */
+        .preload-image {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* Фоновое изображение - будет показано после полной загрузки */
         .background {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('assets/sprites/PNG/BG.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-color: #000; /* Fallback цвет */
+            background-color: #0a0a1a;
             z-index: 1;
+            opacity: 0;
+            transition: opacity 1s ease-out;
+        }
+        
+        .background.loaded {
+            opacity: 1;
         }
         
         /* Контент поверх фона */
@@ -70,6 +81,14 @@
             text-align: center;
             padding: 20px;
             color: white;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        
+        .content.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
         
         /* Заголовок */
@@ -77,8 +96,12 @@
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 30px;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(59, 130, 246, 0.3);
             line-height: 1.2;
+            background: linear-gradient(135deg, #ffffff 0%, #c2e9fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .title-line {
@@ -94,15 +117,18 @@
             text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
             line-height: 1.5;
             padding: 0 20px;
+            color: rgba(255, 255, 255, 0.9);
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.8s ease-out 0.3s forwards;
         }
         
-        /* Кнопка с твоим PNG */
+        /* Кнопка с GitHub */
         .button {
             padding: 20px 50px;
             font-size: 1.5rem;
             font-weight: 500;
             color: white;
-            background-image: url('assets/sprites/PNG/Button_BG_Color.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -113,7 +139,11 @@
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
             position: relative;
             overflow: hidden;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.8s ease-out 0.6s forwards;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5), 0 0 30px rgba(59, 130, 246, 0.2);
         }
         
         .button::before {
@@ -133,11 +163,12 @@
         }
         
         .button:hover {
-            transform: scale(1.05);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6), 0 0 40px rgba(59, 130, 246, 0.3);
         }
         
         .button:active {
-            transform: scale(0.98);
+            transform: translateY(-2px) scale(0.98);
         }
         
         /* Адаптивность */
@@ -177,40 +208,155 @@
             }
         }
         
-        /* Индикатор загрузки фона */
+        /* Красивый экран загрузки */
         .loading {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #000;
-            z-index: 3;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+            z-index: 10;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: white;
-            font-size: 1.2rem;
-            transition: opacity 0.3s;
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
         
         .loading.hidden {
             opacity: 0;
             pointer-events: none;
+            transform: scale(1.1);
+        }
+        
+        /* Анимированный логотип */
+        .loading-logo {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 30px;
+        }
+        
+        .logo-circle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid transparent;
+        }
+        
+        .logo-circle-1 {
+            border-top: 3px solid #3b82f6;
+            border-right: 3px solid transparent;
+            animation: rotate 2s linear infinite;
+        }
+        
+        .logo-circle-2 {
+            border-bottom: 3px solid #8b5cf6;
+            border-left: 3px solid transparent;
+            animation: rotate 2s linear infinite reverse;
+            animation-delay: 0.3s;
+        }
+        
+        .logo-circle-3 {
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .logo-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            color: white;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.7);
+        }
+        
+        /* Анимации */
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            text-align: center;
+            opacity: 0.8;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .loading-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            animation: loadingProgress 2s ease-in-out infinite;
+        }
+        
+        @keyframes loadingProgress {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 0%; }
         }
     </style>
 </head>
 <body>
-    <!-- Индикатор загрузки -->
+    <!-- Скрытые изображения для предзагрузки -->
+    <img class="preload-image" id="preloadBg" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/BG.png" alt="preload">
+    <img class="preload-image" id="preloadButton" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png" alt="preload">
+    
+    <!-- Красивый экран загрузки -->
     <div class="loading" id="loading">
-        Загрузка...
+        <div class="loading-logo">
+            <div class="logo-circle logo-circle-1"></div>
+            <div class="logo-circle logo-circle-2"></div>
+            <div class="logo-circle logo-circle-3"></div>
+            <div class="logo-center">AR</div>
+        </div>
+        
+        <div class="loading-text">Загрузка AR-квеста...</div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+        </div>
     </div>
     
-    <!-- Фоновое изображение - твой PNG -->
+    <!-- Фоновое изображение (пустое, будет заполнено после загрузки) -->
     <div class="background" id="background"></div>
     
     <!-- Контент -->
-    <div class="content" id="content" style="display: none;">
+    <div class="content" id="content">
         <h1 class="title">
             <span class="title-line">AR-квест</span>
             <span class="title-line">«Образы Москвы»</span>
@@ -220,7 +366,7 @@
             Погрузитесь в атмосферу старой и современной Москвы сквозь шедевры русских художников.
         </p>
         
-        <button class="button" onclick="goToARScene()">
+        <button class="button" id="startButton">
             <span>➤ Сканировать картину</span>
         </button>
     </div>
@@ -235,38 +381,102 @@
             const loading = document.getElementById('loading');
             const background = document.getElementById('background');
             const content = document.getElementById('content');
+            const startButton = document.getElementById('startButton');
             
-            // Предзагрузка фонового изображения - твоего PNG
-            const bgImage = new Image();
-            bgImage.src = 'assets/sprites/PNG/BG.png';
+            // Элементы предзагрузки
+            const preloadBg = document.getElementById('preloadBg');
+            const preloadButton = document.getElementById('preloadButton');
             
-            bgImage.onload = function() {
-                // Когда твой PNG фон загружен, показываем контент
-                setTimeout(function() {
-                    loading.classList.add('hidden');
-                    content.style.display = 'flex';
-                    
-                    // Предзагрузка кнопки PNG
-                    const buttonImage = new Image();
-                    buttonImage.src = 'assets/sprites/PNG/Button_BG_Color.png';
-                }, 300);
-            };
+            // Счетчик загруженных изображений
+            let loadedImages = 0;
+            const totalImages = 2;
             
-            bgImage.onerror = function() {
-                // Если твой PNG не загрузился, используем fallback
-                console.error('Не удалось загрузить фон:', bgImage.src);
-                background.style.backgroundColor = '#2c3e50';
-                loading.classList.add('hidden');
-                content.style.display = 'flex';
-            };
+            function imageLoaded() {
+                loadedImages++;
+                
+                if (loadedImages === totalImages) {
+                    // ВСЕ изображения полностью загружены
+                    setTimeout(function() {
+                        // 1. Устанавливаем фон из полностью загруженного изображения
+                        background.style.backgroundImage = `url('${preloadBg.src}')`;
+                        background.classList.add('loaded');
+                        
+                        // 2. Устанавливаем фон кнопки
+                        startButton.style.backgroundImage = `url('${preloadButton.src}')`;
+                        
+                        // 3. Скрываем экран загрузки
+                        setTimeout(function() {
+                            loading.classList.add('hidden');
+                            
+                            // 4. Показываем контент
+                            setTimeout(function() {
+                                content.classList.add('visible');
+                            }, 300);
+                        }, 500);
+                    }, 100);
+                }
+            }
+            
+            // Обработчики загрузки изображений
+            if (preloadBg.complete && preloadBg.naturalHeight !== 0) {
+                // Изображение уже загружено (из кэша)
+                console.log('Фон уже загружен из кэша');
+                imageLoaded();
+            } else {
+                preloadBg.onload = imageLoaded;
+                preloadBg.onerror = function() {
+                    console.error('Не удалось загрузить фон с GitHub');
+                    background.style.backgroundColor = '#1a1a2e';
+                    background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
+                    imageLoaded();
+                };
+            }
+            
+            if (preloadButton.complete && preloadButton.naturalHeight !== 0) {
+                // Изображение уже загружено
+                console.log('Кнопка уже загружена из кэша');
+                imageLoaded();
+            } else {
+                preloadButton.onload = imageLoaded;
+                preloadButton.onerror = function() {
+                    console.error('Не удалось загрузить кнопку с GitHub');
+                    // Красивый fallback градиент для кнопки
+                    startButton.style.backgroundImage = 
+                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    imageLoaded();
+                };
+            }
+            
+            // Добавляем обработчик клика на кнопку
+            startButton.addEventListener('click', goToARScene);
             
             // Таймаут на случай проблем с загрузкой
             setTimeout(function() {
                 if (!loading.classList.contains('hidden')) {
+                    console.log('Таймаут загрузки, показываем контент');
+                    
+                    // Пытаемся использовать то, что загрузилось
+                    if (preloadBg.src) {
+                        background.style.backgroundImage = `url('${preloadBg.src}')`;
+                    } else {
+                        background.style.backgroundColor = '#1a1a2e';
+                        background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
+                    }
+                    
+                    if (preloadButton.src) {
+                        startButton.style.backgroundImage = `url('${preloadButton.src}')`;
+                    } else {
+                        startButton.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    }
+                    
+                    background.classList.add('loaded');
                     loading.classList.add('hidden');
-                    content.style.display = 'flex';
+                    
+                    setTimeout(function() {
+                        content.classList.add('visible');
+                    }, 300);
                 }
-            }, 3000);
+            }, 10000); // 10 секунд максимум
             
             // Предотвращаем масштабирование на мобильных
             document.addEventListener('touchmove', function(e) {
@@ -274,6 +484,19 @@
                     e.preventDefault();
                 }
             }, { passive: false });
+            
+            // Preload других спрайтов (не блокирующих)
+            setTimeout(function() {
+                const otherSprites = [
+                    'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_Back.png',
+                    'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/POI_Dot.png'
+                ];
+                
+                otherSprites.forEach(url => {
+                    const img = new Image();
+                    img.src = url;
+                });
+            }, 1000);
         });
     </script>
 </body>
