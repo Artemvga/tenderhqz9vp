@@ -5,9 +5,46 @@
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
     <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+    <style>
+        /* Стили для кнопки возврата */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 120px;  /* В 2 раза больше (было 60px) */
+            height: 120px; /* В 2 раза больше (было 60px) */
+            background-color: transparent; /* Убираем фон */
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            transform: scale(1.1);
+        }
+        
+        .back-button:active {
+            transform: scale(0.95);
+        }
+        
+        .back-button img {
+            width: 100%;  /* Заполняем всю кнопку */
+            height: 100%; /* Заполняем всю кнопку */
+            pointer-events: none;
+        }
+    </style>
 </head>
 
 <body style="margin: 0; overflow: hidden;">
+    <!-- Кнопка возврата -->
+    <button class="back-button" onclick="goBack()" title="Вернуться назад">
+        <img src="assets/sprites/PNG/Button_Back.png" alt="Назад">
+    </button>
+
     <a-scene
         vr-mode-ui="enabled: false;"
         loading-screen="enabled: false;"
@@ -26,9 +63,10 @@
             cursor="fuse: false; rayOrigin: mouse;"
             id="markerA"
         >
+            <!-- Используем PNG спрайт -->
             <a-image
-                src="assets/sprites/POI_Dot.png"
-                scale="0.2 0.2 0.2"
+                src="assets/sprites/PNG/POI_Dot.png"
+                scale="1 1 1"
                 class="clickable"
                 rotation="-90 0 0"
                 gesture-handler
@@ -37,5 +75,18 @@
 
         <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+        function goBack() {
+            window.location.href = "index.html";
+        }
+        
+        // Добавляем обработку клавиши Escape для удобства
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                goBack();
+            }
+        });
+    </script>
 </body>
 </html>

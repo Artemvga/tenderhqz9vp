@@ -2,6 +2,181 @@
 <html>
 <head>
     <title>AR Experience</title>
+    
+    <!-- Подключение всех начертаний Inter Tight -->
+    <style>
+        /* Thin - 100 */
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-Thin.woff2') format('woff2'),
+                 url('assets/font/InterTight-Thin.woff') format('woff');
+            font-weight: 100;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-ThinItalic.woff2') format('woff2'),
+                 url('assets/font/InterTight-ThinItalic.woff') format('woff');
+            font-weight: 100;
+            font-style: italic;
+            font-display: swap;
+        }
+        
+        /* ExtraLight - 200 */
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-ExtraLight.woff2') format('woff2'),
+                 url('assets/font/InterTight-ExtraLight.woff') format('woff');
+            font-weight: 200;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-ExtraLightItalic.woff2') format('woff2'),
+                 url('assets/font/InterTight-ExtraLightItalic.woff') format('woff');
+            font-weight: 200;
+            font-style: italic;
+            font-display: swap;
+        }
+        
+        /* Light - 300 */
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-Light.woff2') format('woff2'),
+                 url('assets/font/InterTight-Light.woff') format('woff');
+            font-weight: 300;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-LightItalic.woff2') format('woff2'),
+                 url('assets/font/InterTight-LightItalic.woff') format('woff');
+            font-weight: 300;
+            font-style: italic;
+            font-display: swap;
+        }
+        
+        /* Regular - 400 */
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-Regular.woff2') format('woff2'),
+                 url('assets/font/InterTight-Regular.woff') format('woff');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-Italic.woff2') format('woff2'),
+                 url('assets/font/InterTight-Italic.woff') format('woff');
+            font-weight: 400;
+            font-style: italic;
+            font-display: swap;
+        }
+        
+        /* Medium - 500 */
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-Medium.woff2') format('woff2'),
+                 url('assets/font/InterTight-Medium.woff') format('woff');
+            font-weight: 500;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-MediumItalic.woff2') format('woff2'),
+                 url('assets/font/InterTight-MediumItalic.woff') format('woff');
+            font-weight: 500;
+            font-style: italic;
+            font-display: swap;
+        }
+        
+        /* SemiBold - 600 */
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-Semibold.woff2') format('woff2'),
+                 url('assets/font/InterTight-Semibold.woff') format('woff');
+            font-weight: 600;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-SemiboldItalic.woff2') format('woff2'),
+                 url('assets/font/InterTight-SemiboldItalic.woff') format('woff');
+            font-weight: 600;
+            font-style: italic;
+            font-display: swap;
+        }
+        
+        /* Bold - 700 */
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-Bold.woff2') format('woff2'),
+                 url('assets/font/InterTight-Bold.woff') format('woff');
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-BoldItalic.woff2') format('woff2'),
+                 url('assets/font/InterTight-BoldItalic.woff') format('woff');
+            font-weight: 700;
+            font-style: italic;
+            font-display: swap;
+        }
+        
+        /* ExtraBold - 800 */
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-ExtraBold.woff2') format('woff2'),
+                 url('assets/font/InterTight-ExtraBold.woff') format('woff');
+            font-weight: 800;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-ExtraBoldItalic.woff2') format('woff2'),
+                 url('assets/font/InterTight-ExtraBoldItalic.woff') format('woff');
+            font-weight: 800;
+            font-style: italic;
+            font-display: swap;
+        }
+        
+        /* Black - 900 */
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-Black.woff2') format('woff2'),
+                 url('assets/font/InterTight-Black.woff') format('woff');
+            font-weight: 900;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: 'Inter Tight';
+            src: url('assets/font/InterTight-BlackItalic.woff2') format('woff2'),
+                 url('assets/font/InterTight-BlackItalic.woff') format('woff');
+            font-weight: 900;
+            font-style: italic;
+            font-display: swap;
+        }
+    </style>
+    
     <style>
         body {
             margin: 0;
@@ -9,31 +184,136 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
+            background-image: url('assets/sprites/PNG/BG.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: 'Inter Tight', sans-serif;
         }
+        
+        .container {
+            text-align: center;
+            padding: 50px 40px;
+            max-width: 600px;
+            width: 85%;
+            margin: 20px;
+        }
+        
+        /* Главный заголовок - ExtraBold (800) */
+        .title {
+            font-size: 2.8rem;
+            color: white;
+            margin: 0 0 25px 0;
+            line-height: 1.2;
+            font-weight: 800; /* ExtraBold */
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+            letter-spacing: -0.5px;
+        }
+        
+        .title-line-1 {
+            display: block;
+            font-size: 2.2rem;
+            color: white;
+            margin-bottom: 8px;
+            font-weight: 800; /* ExtraBold */
+        }
+        
+        .title-line-2 {
+            display: block;
+            font-size: 2.8rem;
+            color: white;
+            font-weight: 800; /* ExtraBold */
+        }
+        
+        /* Описание - Regular (400) */
+        .description {
+            font-size: 1.3rem;
+            color: white;
+            line-height: 1.6;
+            margin: 0 0 35px 0;
+            padding: 0 10px;
+            text-align: center;
+            font-weight: 400; /* Regular */
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.6);
+        }
+        
+        /* Кнопка - Medium (500), при наведении SemiBold (600) */
         .button {
-            padding: 20px 40px;
-            font-size: 18px;
-            background-color: #007bff;
+            padding: 22px 50px;
+            font-size: 1.4rem;
+            background-image: url('assets/sprites/PNG/Button_BG_Color.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: transparent;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            font-weight: 500; /* Medium */
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+            min-height: 70px;
+            min-width: 200px;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
         }
+        
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            z-index: 1;
+        }
+        
+        .button span {
+            position: relative;
+            z-index: 2;
+        }
+        
         .button:hover {
-            background-color: #0056b3;
+            background-image: url('assets/sprites/PNG/Button_BG_Color.png');
+            background-size: cover;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            font-weight: 600; /* SemiBold при наведении */
+        }
+        
+        .button:hover::before {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .button:active {
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
-    <button class="button" onclick="goToARScene()">
-        Перейти к AR сцене
-    </button>
+    <div class="container">
+        <h1 class="title">
+            <span class="title-line-1">AR-квест</span>
+            <span class="title-line-2">«Образы Москвы»</span>
+        </h1>
+        
+        <p class="description">
+            Погрузитесь в атмосферу старой и современной Москвы сквозь шедевры русских художников.
+        </p>
+        
+        <button class="button" onclick="goToARScene()">
+            <span>Сканировать картину</span>
+        </button>
+    </div>
 
     <script>
         function goToARScene() {
-            // Переход на страницу с AR сценой
             window.location.href = "ar-scene.html";
         }
     </script>
