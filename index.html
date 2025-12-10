@@ -231,12 +231,18 @@
             transform: scale(1.1);
         }
         
+        .loading.instant-hidden {
+            opacity: 0;
+            pointer-events: none;
+            display: none;
+        }
+        
         /* Анимированный логотип */
         .loading-logo {
             position: relative;
-            width: 160px;
-            height: 160px;
-            margin-bottom: 40px;
+            width: 140px;
+            height: 140px;
+            margin-bottom: 30px;
         }
         
         .logo-circle {
@@ -246,26 +252,24 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            border: 4px solid transparent;
+            border: 3px solid transparent;
             box-sizing: border-box;
         }
         
         .logo-circle-1 {
-            border-top: 4px solid rgba(255, 255, 255, 0.9);
-            border-right: 4px solid transparent;
+            border-top: 3px solid rgba(255, 255, 255, 0.9);
+            border-right: 3px solid transparent;
             animation: rotate 2s linear infinite;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
         }
         
         .logo-circle-2 {
-            border-bottom: 4px solid rgba(255, 255, 255, 0.7);
-            border-left: 4px solid transparent;
+            border-bottom: 3px solid rgba(255, 255, 255, 0.7);
+            border-left: 3px solid transparent;
             animation: rotate 2.5s linear infinite reverse;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
         }
         
         .logo-circle-3 {
-            border: 4px solid rgba(255, 255, 255, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             animation: pulse 2s ease-in-out infinite;
         }
         
@@ -274,11 +278,10 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 48px;
+            font-size: 42px;
             color: white;
             font-weight: 700;
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
-            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
         }
         
         /* Анимации */
@@ -293,7 +296,7 @@
                 opacity: 0.5; 
             }
             50% { 
-                transform: scale(1.1); 
+                transform: scale(1.05); 
                 opacity: 0.8; 
             }
         }
@@ -309,53 +312,31 @@
             }
         }
         
-        @keyframes shimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-        
         .loading-text {
             color: white;
-            font-size: 1.4rem;
-            margin-top: 20px;
+            font-size: 1.3rem;
+            margin-top: 15px;
             text-align: center;
             font-weight: 500;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(
-                90deg,
-                #FFFFFF 0%,
-                #FFE6F2 25%,
-                #FFFFFF 50%,
-                #FFE6F2 75%,
-                #FFFFFF 100%
-            );
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 3s linear infinite;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0.9;
         }
         
         .loading-progress {
-            width: 250px;
-            height: 6px;
+            width: 200px;
+            height: 4px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-            margin-top: 30px;
+            border-radius: 2px;
+            margin-top: 25px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
         
         .loading-progress-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, 
-                rgba(255, 255, 255, 0.9) 0%, 
-                rgba(255, 255, 255, 0.7) 50%, 
-                rgba(255, 255, 255, 0.9) 100%);
-            border-radius: 3px;
-            animation: loadingProgress 2.5s ease-in-out infinite;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+            animation: loadingProgress 2s ease-in-out infinite;
         }
         
         @keyframes loadingProgress {
@@ -372,75 +353,6 @@
                 margin-left: 100%;
             }
         }
-        
-        /* Эффект частиц */
-        .particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-        
-        .particle {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 50%;
-            animation: float 15s linear infinite;
-        }
-        
-        @keyframes float {
-            0% {
-                transform: translateY(100vh) translateX(0) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.8;
-            }
-            90% {
-                opacity: 0.8;
-            }
-            100% {
-                transform: translateY(-100px) translateX(calc(100vw * var(--random-x))) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        /* Волны на фоне */
-        .waves {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100px;
-            opacity: 0.3;
-            z-index: 0;
-        }
-        
-        .wave {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 200%;
-            height: 100px;
-            background: linear-gradient(90deg, 
-                rgba(255, 255, 255, 0.1) 0%, 
-                rgba(255, 255, 255, 0.2) 50%, 
-                rgba(255, 255, 255, 0.1) 100%);
-            animation: wave 10s linear infinite;
-        }
-        
-        .wave:nth-child(2) {
-            animation-delay: -5s;
-            opacity: 0.5;
-        }
-        
-        @keyframes wave {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
     </style>
 </head>
 <body>
@@ -448,14 +360,8 @@
     <img class="preload-image" id="preloadBg" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/BG.png" alt="preload">
     <img class="preload-image" id="preloadButton" src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png" alt="preload">
     
-    <!-- Красивый экран загрузки с оранжево-розовым градиентом -->
+    <!-- Красивый экран загрузки -->
     <div class="loading" id="loading">
-        <div class="particles" id="particles"></div>
-        <div class="waves">
-            <div class="wave"></div>
-            <div class="wave"></div>
-        </div>
-        
         <div class="loading-logo">
             <div class="logo-circle logo-circle-1"></div>
             <div class="logo-circle logo-circle-2"></div>
@@ -469,7 +375,7 @@
         </div>
     </div>
     
-    <!-- Фоновое изображение (пустое, будет заполнено после загрузки) -->
+    <!-- Фоновое изображение -->
     <div class="background" id="background"></div>
     
     <!-- Контент -->
@@ -493,48 +399,73 @@
             window.location.href = "ar-scene.html";
         }
         
-        // Создание частиц
-        function createParticles() {
-            const particlesContainer = document.getElementById('particles');
-            const particleCount = 25;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                // Случайная позиция
-                particle.style.left = Math.random() * 100 + '%';
-                
-                // Случайный размер
-                const size = 2 + Math.random() * 4;
-                particle.style.width = size + 'px';
-                particle.style.height = size + 'px';
-                
-                // Случайная прозрачность
-                particle.style.opacity = 0.4 + Math.random() * 0.4;
-                
-                // Случайная задержка анимации
-                particle.style.animationDelay = Math.random() * 15 + 's';
-                
-                // Случайная длительность анимации
-                particle.style.animationDuration = 10 + Math.random() * 10 + 's';
-                
-                // Случайное движение по X
-                particle.style.setProperty('--random-x', Math.random() * 2 - 1);
-                
-                particlesContainer.appendChild(particle);
+        // Проверка, были ли уже загружены изображения в этой сессии
+        function areImagesCached() {
+            try {
+                const cacheState = localStorage.getItem('imagesCached');
+                if (cacheState === 'true') {
+                    // Проверяем действительно ли изображения в кэше браузера
+                    const bgImg = document.getElementById('preloadBg');
+                    const btnImg = document.getElementById('preloadButton');
+                    
+                    return bgImg.complete && bgImg.naturalHeight !== 0 &&
+                           btnImg.complete && btnImg.naturalHeight !== 0;
+                }
+            } catch (e) {
+                // localStorage может быть недоступен
+                console.log('localStorage недоступен');
+            }
+            return false;
+        }
+        
+        // Сохранение состояния кэширования
+        function markImagesAsCached() {
+            try {
+                localStorage.setItem('imagesCached', 'true');
+                // Сохраняем время кэширования
+                localStorage.setItem('cacheTime', Date.now().toString());
+            } catch (e) {
+                // Игнорируем ошибки localStorage
             }
         }
         
-        // Оптимизированная загрузка
+        // Быстрая загрузка если изображения уже кэшированы
+        function quickLoadIfCached() {
+            if (areImagesCached()) {
+                console.log('Используем кэшированные изображения');
+                
+                const loading = document.getElementById('loading');
+                const background = document.getElementById('background');
+                const content = document.getElementById('content');
+                const startButton = document.getElementById('startButton');
+                const preloadBg = document.getElementById('preloadBg');
+                const preloadButton = document.getElementById('preloadButton');
+                
+                // Сразу устанавливаем фон и скрываем загрузку
+                background.style.backgroundImage = `url('${preloadBg.src}')`;
+                background.classList.add('loaded');
+                startButton.style.backgroundImage = `url('${preloadButton.src}')`;
+                
+                // Сразу показываем контент, без анимации загрузки
+                loading.classList.add('instant-hidden');
+                content.classList.add('visible');
+                
+                return true;
+            }
+            return false;
+        }
+        
+        // Основная загрузка
         document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем кэш ДО всего
+            if (quickLoadIfCached()) {
+                return; // Выходим если использовали кэш
+            }
+            
             const loading = document.getElementById('loading');
             const background = document.getElementById('background');
             const content = document.getElementById('content');
             const startButton = document.getElementById('startButton');
-            
-            // Создаем частицы
-            createParticles();
             
             // Элементы предзагрузки
             const preloadBg = document.getElementById('preloadBg');
@@ -543,61 +474,81 @@
             // Счетчик загруженных изображений
             let loadedImages = 0;
             const totalImages = 2;
+            let hasError = false;
             
             function imageLoaded() {
                 loadedImages++;
                 
-                if (loadedImages === totalImages) {
+                if (loadedImages === totalImages && !hasError) {
+                    // Отмечаем что изображения кэшированы
+                    markImagesAsCached();
+                    
                     // ВСЕ изображения полностью загружены
                     setTimeout(function() {
-                        // 1. Устанавливаем фон из полностью загруженного изображения
+                        // 1. Устанавливаем фон
                         background.style.backgroundImage = `url('${preloadBg.src}')`;
                         background.classList.add('loaded');
                         
                         // 2. Устанавливаем фон кнопки
                         startButton.style.backgroundImage = `url('${preloadButton.src}')`;
                         
-                        // 3. Скрываем экран загрузки с задержкой для завершения анимаций
+                        // 3. Скрываем экран загрузки
                         setTimeout(function() {
                             loading.classList.add('hidden');
                             
                             // 4. Показываем контент
                             setTimeout(function() {
                                 content.classList.add('visible');
-                            }, 400);
-                        }, 600);
-                    }, 200);
+                            }, 300);
+                        }, 400);
+                    }, 100);
+                }
+            }
+            
+            function imageError() {
+                hasError = true;
+                loadedImages++;
+                
+                // Fallback на случай ошибки
+                if (preloadBg === this) {
+                    console.error('Не удалось загрузить фон с GitHub');
+                    background.style.backgroundColor = '#0a0a1a';
+                    background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
+                } else {
+                    console.error('Не удалось загрузить кнопку с GitHub');
+                    startButton.style.backgroundImage = 
+                        'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
+                }
+                
+                if (loadedImages === totalImages) {
+                    // Все равно показываем контент
+                    setTimeout(function() {
+                        background.classList.add('loaded');
+                        loading.classList.add('hidden');
+                        setTimeout(function() {
+                            content.classList.add('visible');
+                        }, 300);
+                    }, 500);
                 }
             }
             
             // Обработчики загрузки изображений
             if (preloadBg.complete && preloadBg.naturalHeight !== 0) {
                 // Изображение уже загружено (из кэша)
-                console.log('Фон уже загружен из кэша');
+                console.log('Фон уже загружен из кэша браузера');
                 imageLoaded();
             } else {
                 preloadBg.onload = imageLoaded;
-                preloadBg.onerror = function() {
-                    console.error('Не удалось загрузить фон с GitHub');
-                    background.style.backgroundColor = '#0a0a1a';
-                    background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
-                    imageLoaded();
-                };
+                preloadBg.onerror = imageError;
             }
             
             if (preloadButton.complete && preloadButton.naturalHeight !== 0) {
                 // Изображение уже загружено
-                console.log('Кнопка уже загружена из кэша');
+                console.log('Кнопка уже загружена из кэша браузера');
                 imageLoaded();
             } else {
                 preloadButton.onload = imageLoaded;
-                preloadButton.onerror = function() {
-                    console.error('Не удалось загрузить кнопку с GitHub');
-                    // Красивый fallback градиент для кнопки
-                    startButton.style.backgroundImage = 
-                        'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
-                    imageLoaded();
-                };
+                preloadButton.onerror = imageError;
             }
             
             // Добавляем обработчик клика на кнопку
@@ -605,18 +556,18 @@
             
             // Таймаут на случай проблем с загрузкой
             setTimeout(function() {
-                if (!loading.classList.contains('hidden')) {
+                if (!loading.classList.contains('hidden') && !loading.classList.contains('instant-hidden')) {
                     console.log('Таймаут загрузки, показываем контент');
                     
                     // Пытаемся использовать то, что загрузилось
-                    if (preloadBg.src) {
+                    if (preloadBg.src && preloadBg.naturalHeight !== 0) {
                         background.style.backgroundImage = `url('${preloadBg.src}')`;
                     } else {
                         background.style.backgroundColor = '#0a0a1a';
                         background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
                     }
                     
-                    if (preloadButton.src) {
+                    if (preloadButton.src && preloadButton.naturalHeight !== 0) {
                         startButton.style.backgroundImage = `url('${preloadButton.src}')`;
                     } else {
                         startButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
@@ -627,16 +578,9 @@
                     
                     setTimeout(function() {
                         content.classList.add('visible');
-                    }, 400);
+                    }, 300);
                 }
-            }, 10000); // 10 секунд максимум
-            
-            // Предотвращаем масштабирование на мобильных
-            document.addEventListener('touchmove', function(e) {
-                if (e.touches.length > 1) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
+            }, 8000); // 8 секунд максимум
             
             // Preload других спрайтов (не блокирующих)
             setTimeout(function() {
@@ -649,7 +593,34 @@
                     const img = new Image();
                     img.src = url;
                 });
-            }, 1000);
+            }, 500);
+            
+            // Предотвращаем масштабирование на мобильных
+            document.addEventListener('touchmove', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Кэшируем страницу для оффлайн использования
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                        console.log('ServiceWorker зарегистрирован');
+                    }).catch(function(err) {
+                        console.log('ServiceWorker ошибка:', err);
+                    });
+                });
+            }
+        });
+        
+        // При возврате на страницу проверяем кэш
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                // Страница загружена из кэша браузера
+                console.log('Страница загружена из кэша браузера');
+                quickLoadIfCached();
+            }
         });
     </script>
 </body>
