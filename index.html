@@ -128,7 +128,7 @@
             animation: fadeInUp 0.8s ease-out 0.3s forwards;
         }
         
-        /* Кнопка с GitHub */
+        /* Базовая кнопка */
         .button {
             padding: 20px 50px;
             font-size: 1.5rem;
@@ -147,9 +147,18 @@
             transition: all 0.3s ease;
             opacity: 0;
             transform: translateY(10px);
-            animation: fadeInUp 0.8s ease-out 0.6s forwards;
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 95, 39, 0.2);
             touch-action: manipulation;
+        }
+        
+        /* Анимации появления для каждой кнопки отдельно */
+        #startButton {
+            animation: fadeInUp 0.8s ease-out 0.6s forwards;
+        }
+
+        #instructionButton {
+            margin-top: 16px;
+            animation: fadeInUp 0.8s ease-out 0.8s forwards;
         }
         
         .button::before {
@@ -354,6 +363,68 @@
                 margin-left: 100%;
             }
         }
+
+        /* Модалка инструкции */
+        .instruction-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 20;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .instruction-modal.visible {
+            display: flex;
+        }
+
+        .instruction-modal-inner {
+            background: rgba(10, 10, 26, 0.98);
+            border-radius: 18px;
+            max-width: 480px;
+            width: 100%;
+            max-height: 90vh;
+            padding: 22px 20px 20px;
+            overflow-y: auto;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+            border: 1px solid rgba(255, 95, 39, 0.25);
+        }
+
+        .instruction-modal-inner h2 {
+            font-size: 1.4rem;
+            margin-bottom: 14px;
+        }
+
+        .instruction-block {
+            text-align: left;
+            font-size: 0.98rem;
+            line-height: 1.5;
+            margin-bottom: 14px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .instruction-block-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .instruction-block-title span.emoji {
+            margin-right: 6px;
+        }
+
+        .instruction-close-btn {
+            margin-top: 12px;
+            width: 100%;
+        }
+
+        @media (max-width: 480px) {
+            .instruction-modal-inner {
+                padding: 18px 16px 16px;
+                border-radius: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -393,11 +464,76 @@
         <button class="button" id="startButton">
             <span>➤ Сканировать картину</span>
         </button>
+
+        <!-- Новая кнопка "Смотреть инструкцию" -->
+        <button class="button" id="instructionButton">
+            <span>ℹ Смотреть инструкцию</span>
+        </button>
+    </div>
+
+    <!-- Модалка с инструкцией -->
+    <div class="instruction-modal" id="instructionModal">
+        <div class="instruction-modal-inner" id="instructionInner">
+            <h2>Как пользоваться AR-квестом</h2>
+
+            <div class="instruction-block">
+                <div class="instruction-block-title">
+                    <span class="emoji">🔍</span>Как начать сканирование
+                </div>
+                <div>
+                    Найдите одну из картин выставки и наведите на неё камеру.<br>
+                    Старайтесь держать телефон ровно, чтобы система быстрее распознала полотно.
+                </div>
+            </div>
+
+            <div class="instruction-block">
+                <div class="instruction-block-title">
+                    <span class="emoji">🎧</span>Что будет дальше
+                </div>
+                <div>
+                    После распознавания появится AR-гид, который расскажет о сюжете картины и её деталях.
+                </div>
+            </div>
+
+            <div class="instruction-block">
+                <div class="instruction-block-title">
+                    <span class="emoji">✨</span>Точки интереса
+                </div>
+                <div>
+                    Во время просмотра на картине появятся интерактивные метки.<br>
+                    Нажимайте на них, чтобы узнать скрытые элементы и историю изображения.
+                </div>
+            </div>
+
+            <div class="instruction-block">
+                <div class="instruction-block-title">
+                    <span class="emoji">❓</span>Мини-квиз
+                </div>
+                <div>
+                    В конце вас ждёт несколько простых вопросов о том, что вы увидели.<br>
+                    Отвечайте внимательно — это повлияет на итоговый результат.
+                </div>
+            </div>
+
+            <div class="instruction-block">
+                <div class="instruction-block-title">
+                    <span class="emoji">🏁</span>Завершение
+                </div>
+                <div>
+                    Пройдя все шаги, вы получите своё общее впечатление — результат прохождения квеста.
+                </div>
+            </div>
+
+            <button class="button instruction-close-btn" id="closeInstruction">
+                <span>Закрыть</span>
+            </button>
+        </div>
     </div>
 
     <script>
         // Универсальная функция для обработки кликов
         function addUniversalClickHandler(element, handler) {
+            if (!element) return;
             let touchStarted = false;
             let touchMoved = false;
             let touchStartTime = 0;
@@ -459,12 +595,14 @@
                 const background = document.getElementById('background');
                 const content = document.getElementById('content');
                 const startButton = document.getElementById('startButton');
+                const instructionButton = document.getElementById('instructionButton');
                 const preloadBg = document.getElementById('preloadBg');
                 const preloadButton = document.getElementById('preloadButton');
                 
                 background.style.backgroundImage = `url('${preloadBg.src}')`;
                 background.classList.add('loaded');
                 startButton.style.backgroundImage = `url('${preloadButton.src}')`;
+                instructionButton.style.backgroundImage = `url('${preloadButton.src}')`;
                 
                 loading.classList.add('instant-hidden');
                 content.classList.add('visible');
@@ -476,9 +614,39 @@
         
         // Основная загрузка
         document.addEventListener('DOMContentLoaded', function() {
+            const instructionModal = document.getElementById('instructionModal');
+            const instructionInner = document.getElementById('instructionInner');
+            const closeInstruction = document.getElementById('closeInstruction');
+
+            function openInstruction() {
+                instructionModal.classList.add('visible');
+            }
+
+            function closeInstructionModal() {
+                instructionModal.classList.remove('visible');
+            }
+
+            // Если всё уже в кеше — сразу показываем
             if (quickLoadIfCached()) {
                 const startButton = document.getElementById('startButton');
+                const instructionButton = document.getElementById('instructionButton');
+
                 addUniversalClickHandler(startButton, goToARScene);
+                addUniversalClickHandler(instructionButton, openInstruction);
+                addUniversalClickHandler(closeInstruction, closeInstructionModal);
+
+                // клик по фону модалки
+                instructionModal.addEventListener('click', function(e) {
+                    if (e.target === instructionModal) {
+                        closeInstructionModal();
+                    }
+                });
+
+                // не закрывать при клике по контенту
+                instructionInner.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+
                 return;
             }
             
@@ -486,8 +654,23 @@
             const background = document.getElementById('background');
             const content = document.getElementById('content');
             const startButton = document.getElementById('startButton');
+            const instructionButton = document.getElementById('instructionButton');
             
             addUniversalClickHandler(startButton, goToARScene);
+            addUniversalClickHandler(instructionButton, openInstruction);
+            addUniversalClickHandler(closeInstruction, closeInstructionModal);
+
+            // клик по фону модалки
+            instructionModal.addEventListener('click', function(e) {
+                if (e.target === instructionModal) {
+                    closeInstructionModal();
+                }
+            });
+
+            // не закрывать при клике по контенту
+            instructionInner.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
             
             const bgUrl = 'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/BG.png';
             const buttonUrl = 'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png';
@@ -505,6 +688,7 @@
                 background.style.backgroundImage = `url('${bgImg.src}')`;
                 background.classList.add('loaded');
                 startButton.style.backgroundImage = `url('${buttonImg.src}')`;
+                instructionButton.style.backgroundImage = `url('${buttonImg.src}')`;
                 
                 setTimeout(function() {
                     loading.classList.add('hidden');
@@ -519,6 +703,7 @@
                 background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
                 background.classList.add('loaded');
                 startButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
+                instructionButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
                 
                 setTimeout(function() {
                     loading.classList.add('hidden');
@@ -584,6 +769,7 @@
                     background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
                     background.classList.add('loaded');
                     startButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
+                    instructionButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
                     loading.classList.add('hidden');
                     
                     setTimeout(function() {
