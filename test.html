@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AR.js NFT Test – mark</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+
+  <!-- AR.js для NFT -->
+  <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.3/aframe/build/aframe-ar-nft.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      color: #0f0;
+      font-family: monospace;
+    }
+    #log {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      font-size: 11px;
+      padding: 4px 6px;
+      background: rgba(0,0,0,0.6);
+      max-width: 100%;
+      white-space: pre-wrap;
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="log">init…</div>
+
+  <a-scene
+    vr-mode-ui="enabled: false"
+    embedded
+    renderer="logarithmicDepthBuffer: true;"
+    arjs="sourceType: webcam; debugUIEnabled: true; trackingMethod: best;"
+  >
+
+    <!-- NFT-маркер -->
+    <a-nft
+      id="testMarker"
+      type="nft"
+      url="https://raw.githack.com/Artemvga/tenderhqz9vp/gh-pages/assets/nft/mark"
+      emitevents="true"
+      smooth="true"
+      smoothCount="10"
+      smoothTolerance="0.01"
+      smoothThreshold="5"
+    >
+      <!-- Куб, который должен появиться на картине -->
+      <a-box
+        position="0 0.5 0"
+        depth="0.2"
+        height="0.5"
+        width="0.5"
+        material="color: red;"
+      ></a-box>
+    </a-nft>
+
+    <!-- Камера -->
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    const logEl = document.getElementById('log');
+    function log(msg) {
+      console.log(msg);
+      if (!logEl) return;
+      logEl.textContent = msg + '\n' + logEl.textContent;
+    }
+
+    log('=== NFT TEST SCENE LOADED ===');
+
+    window.addEventListener('load', function () {
+      const marker = document.getElementById('testMarker');
+
+      if (!marker) {
+        log('❌ testMarker element NOT found');
+        return;
+      }
+
+      log('✓ testMarker element found, waiting for AR.js…');
+
+      marker.addEventListener('markerFound', function () {
+        log('✅ [TEST] Marker FOUND');
+      });
+
+      marker.addEventListener('markerLost', function () {
+        log('⚠️ [TEST] Marker LOST');
+      });
+    });
+  </script>
+</body>
+</html>
