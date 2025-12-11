@@ -2,19 +2,33 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>AR scene — 2 POI + conditional cursor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>AR scene – 2 POI + conditional cursor</title>
 
-    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+    <!-- Обновлённые версии библиотек -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.5/aframe/build/aframe-ar.js"></script>
 
     <style>
-        body { margin:0; overflow:hidden; width:100vw; height:100vh; }
-        .back-button { position: fixed; top:20px; left:20px; z-index:1000; background:transparent; border:none; cursor:pointer; width:60px; height:60px; padding:0; }
-        .back-button img { width:100%; height:100%; }
+        body { margin:0; overflow:hidden; width:100vw; height:100vh; -webkit-user-select: none; user-select: none; }
+        .back-button { 
+            position: fixed; 
+            top:20px; 
+            left:20px; 
+            z-index:1000; 
+            background:transparent; 
+            border:none; 
+            cursor:pointer; 
+            width:60px; 
+            height:60px; 
+            padding:0;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .back-button img { width:100%; height:100%; pointer-events: none; }
 
-        /* Панель информации (универсальная для двух POI) */
+        /* Панель информации */
         .info-panel {
             position: fixed;
             top: 50%;
@@ -35,17 +49,54 @@
         .info-panel.visible { display: block; }
         .info-panel h2 { margin: 0 0 12px 0; font-size:20px; }
         .info-panel p { margin: 0 0 18px 0; font-size:15px; color: rgba(255,255,255,0.9); }
-        .panel-close-button { width:100%; padding:14px; border-radius:10px; border:none; cursor:pointer; font-size:16px; font-weight:600; background-image: url('https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png'); background-size:cover; color:#fff; position:relative; overflow:hidden; }
-        .overlay { position: fixed; inset:0; background: rgba(0,0,0,0.5); display:none; z-index:1999; }
+        .panel-close-button { 
+            width:100%; 
+            padding:14px; 
+            border-radius:10px; 
+            border:none; 
+            cursor:pointer; 
+            font-size:16px; 
+            font-weight:600; 
+            background-image: url('https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png'); 
+            background-size:cover; 
+            color:#fff; 
+            position:relative; 
+            overflow:hidden;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .overlay { 
+            position: fixed; 
+            inset:0; 
+            background: rgba(0,0,0,0.5); 
+            display:none; 
+            z-index:1999;
+            -webkit-tap-highlight-color: transparent;
+        }
         .overlay.visible { display:block; }
 
-        /* Скрываем элементы A-Frame UI по умолчанию */
-        .a-enter-vr, .a-orientation-modal, .a-dialog, .arjs-loader, .arjs-detect { display:none !important; }
+        /* Скрываем элементы A-Frame UI */
+        .a-enter-vr, .a-orientation-modal, .a-dialog, .arjs-loader { display:none !important; }
 
+        /* Сообщение об ошибке */
+        .error-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 3000;
+            display: none;
+            text-align: center;
+            max-width: 80%;
+        }
     </style>
 </head>
 <body>
-    <button class="back-button" onclick="goBack()" title="Назад">
+    <button class="back-button" id="backButton" title="Назад">
         <img src="https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_Back.png" alt="Назад">
     </button>
 
@@ -59,16 +110,20 @@
         <button class="panel-close-button" id="closePanel"><span>Закрыть</span></button>
     </div>
 
+    <div class="error-message" id="errorMessage"></div>
+
     <!-- AR сцена -->
     <a-scene
+        id="arScene"
         vr-mode-ui="enabled: false"
         loading-screen="enabled: false"
+        renderer="logarithmicDepthBuffer: true; precision: medium;"
         embedded
-        arjs="sourceType: webcam; debugUIEnabled: false;"
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+        gesture-detector
     >
         <a-assets>
-            <!-- Спрайт POI (один и тот же для двух POI) -->
-            <img id="poi-image" src="https://raw.githubusercontent.com/Artemvga/tenderhqz9vp/gh-pages/assets/sprites/PNG/POI_Dot.png">
+            <img id="poi-image" crossorigin="anonymous" src="https://raw.githubusercontent.com/Artemvga/tenderhqz9vp/gh-pages/assets/sprites/PNG/POI_Dot.png">
         </a-assets>
 
         <!-- Маркер -->
@@ -76,9 +131,12 @@
             id="mainMarker"
             type="pattern"
             preset="custom"
-            url="assets/marker.patt"
+            url="https://raw.githubusercontent.com/Artemvga/tenderhqz9vp/gh-pages/assets/marker.patt"
+            raycaster="objects: .clickable"
+            emitevents="true"
+            cursor="fuse: false; rayOrigin: mouse;"
         >
-            <!-- Два POI, разные позиции / атрибуты data-* для разного текста -->
+            <!-- Два POI -->
             <a-plane
                 id="poi-dot-1"
                 class="clickable poi"
@@ -87,8 +145,9 @@
                 rotation="-90 0 0"
                 scale="0.28 0.28 0.28"
                 material="transparent: true; alphaTest: 0.5; side: double;"
-                data-title="Портрет 1 — Иван Иванов"
+                data-title="Портрет 1 – Иван Иванов"
                 data-desc="Краткое описание портрета 1: техника, автор, год. Нажмите, чтобы узнать больше."
+                gesture-handler
             ></a-plane>
 
             <a-plane
@@ -99,30 +158,58 @@
                 rotation="-90 0 0"
                 scale="0.28 0.28 0.28"
                 material="transparent: true; alphaTest: 0.5; side: double;"
-                data-title="Пейзаж — Москва"
+                data-title="Пейзаж – Москва"
                 data-desc="Краткое описание пейзажа: сюжет, автор, локация. Нажмите, чтобы узнать больше."
+                gesture-handler
             ></a-plane>
-
-            <!-- (опционально) небольшая подсказка/рамка на самой метке -->
-            <a-entity position="0 0 0">
-                <!-- тут можно добавить 3D объекты, рамки и т.п. -->
-            </a-entity>
         </a-marker>
 
-        <!-- Камера + курсор.
-             Важно: курсор изначально скрыт (visible: false).
-             Мы будем показывать его только когда метка найдена (markerFound). -->
+        <!-- Камера + курсор -->
         <a-entity camera>
             <a-cursor
                 id="cursor"
                 color="#FF5F27"
                 raycaster="objects: .clickable; far: 20"
                 visible="false"
+                fuse="false"
             ></a-cursor>
         </a-entity>
     </a-scene>
 
     <script>
+        // Универсальная функция для обработки кликов (работает и на iOS, и на Android)
+        function addUniversalClickHandler(element, handler) {
+            let touchStarted = false;
+            let touchMoved = false;
+            
+            element.addEventListener('touchstart', function(e) {
+                touchStarted = true;
+                touchMoved = false;
+            }, { passive: true });
+            
+            element.addEventListener('touchmove', function(e) {
+                touchMoved = true;
+            }, { passive: true });
+            
+            element.addEventListener('touchend', function(e) {
+                if (touchStarted && !touchMoved) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handler(e);
+                }
+                touchStarted = false;
+                touchMoved = false;
+            });
+            
+            element.addEventListener('click', function(e) {
+                if (!touchStarted) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handler(e);
+                }
+            });
+        }
+
         function goBack() {
             window.location.href = "index.html";
         }
@@ -133,71 +220,199 @@
         const panelTitle = document.getElementById('panelTitle');
         const panelDesc = document.getElementById('panelDesc');
         const closeBtn = document.getElementById('closePanel');
+        const backButton = document.getElementById('backButton');
 
         function openInfoPanel(title, desc) {
             panelTitle.textContent = title || 'Информация';
             panelDesc.textContent = desc || '';
             infoPanel.classList.add('visible');
             overlay.classList.add('visible');
-            overlay.onclick = closeInfoPanel;
         }
 
         function closeInfoPanel() {
             infoPanel.classList.remove('visible');
             overlay.classList.remove('visible');
-            overlay.onclick = null;
         }
 
-        closeBtn.addEventListener('click', closeInfoPanel);
+        // Обработчики для кнопок с универсальной поддержкой touch и click
+        addUniversalClickHandler(closeBtn, closeInfoPanel);
+        addUniversalClickHandler(overlay, closeInfoPanel);
+        addUniversalClickHandler(backButton, goBack);
 
-        // --- Компонент клика который читает data-* и открывает панель ---
-        AFRAME.registerComponent('click-handler', {
+        // --- Gesture detector компонент для A-Frame ---
+        AFRAME.registerComponent('gesture-detector', {
+            schema: {
+                element: { default: '' }
+            },
             init: function () {
-                const el = this.el;
+                this.targetElement = this.data.element && document.querySelector(this.data.element);
+                if (!this.targetElement) {
+                    this.targetElement = this.el;
+                }
 
-                // Нормальные события для A-Frame (cursor / touch / mouse)
-                el.addEventListener('click', function (evt) {
-                    // читаем данные с элемента (title/desc)
-                    const title = el.getAttribute('data-title') || 'Информация';
-                    const desc = el.getAttribute('data-desc') || '';
-                    openInfoPanel(title, desc);
-                });
+                this.internalState = {
+                    previousState: null
+                };
 
-                el.addEventListener('touchstart', function (evt) {
-                    const title = el.getAttribute('data-title') || 'Информация';
-                    const desc = el.getAttribute('data-desc') || '';
-                    openInfoPanel(title, desc);
-                    evt.stopPropagation();
-                });
+                this.emitGestureEvent = this.emitGestureEvent.bind(this);
+                this.targetElement.addEventListener('touchstart', this.emitGestureEvent);
+                this.targetElement.addEventListener('touchend', this.emitGestureEvent);
+                this.targetElement.addEventListener('touchmove', this.emitGestureEvent);
+            },
+            remove: function () {
+                this.targetElement.removeEventListener('touchstart', this.emitGestureEvent);
+                this.targetElement.removeEventListener('touchend', this.emitGestureEvent);
+                this.targetElement.removeEventListener('touchmove', this.emitGestureEvent);
+            },
+            emitGestureEvent(event) {
+                const currentState = this.getTouchState(event);
+                const previousState = this.internalState.previousState;
 
-                // отладочные события (по желанию)
-                el.addEventListener('mouseenter', function () {
-                    // можно добавить подсветку POI при наведении (опционно)
-                    // el.setAttribute('scale', '0.32 0.32 0.32');
-                });
-                el.addEventListener('mouseleave', function () {
-                    // el.setAttribute('scale', '0.28 0.28 0.28');
-                });
+                const gestureContinues = previousState && 
+                    currentState && 
+                    currentState.touchCount === previousState.touchCount;
+
+                const gestureEnded = previousState && !gestureContinues;
+                const gestureStarted = currentState && !gestureContinues;
+
+                if (gestureEnded) {
+                    const eventName = this.getEventPrefix(previousState.touchCount) + 'ended';
+                    this.el.emit(eventName, previousState);
+                    this.internalState.previousState = null;
+                }
+
+                if (gestureStarted) {
+                    currentState.startTime = performance.now();
+                    currentState.startPosition = currentState.position;
+                    currentState.startSpread = currentState.spread;
+                    const eventName = this.getEventPrefix(currentState.touchCount) + 'started';
+                    this.el.emit(eventName, currentState);
+                    this.internalState.previousState = currentState;
+                }
+
+                if (gestureContinues) {
+                    const eventDetail = {
+                        positionChange: {
+                            x: currentState.position.x - previousState.position.x,
+                            y: currentState.position.y - previousState.position.y
+                        }
+                    };
+
+                    if (currentState.spread) {
+                        eventDetail.spreadChange = currentState.spread - previousState.spread;
+                    }
+
+                    Object.assign(previousState, currentState);
+                    const eventName = this.getEventPrefix(currentState.touchCount) + 'moved';
+                    this.el.emit(eventName, eventDetail);
+                }
+            },
+            getTouchState: function (event) {
+                if (event.touches.length === 0) {
+                    return null;
+                }
+
+                const touchList = [];
+                for (let i = 0; i < event.touches.length; i++) {
+                    touchList.push(event.touches[i]);
+                }
+
+                const touchState = {
+                    touchCount: touchList.length
+                };
+
+                const centerPositionRawX = touchList.reduce((sum, touch) => sum + touch.clientX, 0) / touchList.length;
+                const centerPositionRawY = touchList.reduce((sum, touch) => sum + touch.clientY, 0) / touchList.length;
+
+                touchState.position = { x: centerPositionRawX, y: centerPositionRawY };
+
+                if (touchList.length >= 2) {
+                    const spread = Math.sqrt(
+                        Math.pow(touchList[0].clientX - touchList[1].clientX, 2) +
+                        Math.pow(touchList[0].clientY - touchList[1].clientY, 2)
+                    );
+                    touchState.spread = spread;
+                }
+
+                return touchState;
+            },
+            getEventPrefix(touchCount) {
+                const numberNames = ['one', 'two', 'three', 'many'];
+                return numberNames[Math.min(touchCount, 4) - 1];
             }
         });
 
-        // Применяем компонент ко всем POI, у которых есть класс clickable
-        window.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.clickable').forEach(el => {
-                if (!el.components['click-handler']) {
-                    el.setAttribute('click-handler', '');
+        // --- Gesture handler для POI ---
+        AFRAME.registerComponent('gesture-handler', {
+            schema: {
+                enabled: { default: true },
+                rotationFactor: { default: 5 },
+                minScale: { default: 0.3 },
+                maxScale: { default: 8 }
+            },
+            init: function () {
+                this.handleScale = this.handleScale.bind(this);
+                this.handleRotation = this.handleRotation.bind(this);
+                this.handleTap = this.handleTap.bind(this);
+
+                this.isVisible = false;
+                this.initialScale = this.el.object3D.scale.clone();
+
+                this.el.sceneEl.addEventListener('onefingermove', this.handleRotation);
+                this.el.sceneEl.addEventListener('twofingermove', this.handleScale);
+                this.el.sceneEl.addEventListener('oneended', this.handleTap);
+            },
+            remove: function () {
+                this.el.sceneEl.removeEventListener('onefingermove', this.handleRotation);
+                this.el.sceneEl.removeEventListener('twofingermove', this.handleScale);
+                this.el.sceneEl.removeEventListener('oneended', this.handleTap);
+            },
+            handleRotation: function (event) {
+                if (this.isVisible) {
+                    this.el.object3D.rotation.y += event.detail.positionChange.x / this.data.rotationFactor;
+                    this.el.object3D.rotation.x += event.detail.positionChange.y / this.data.rotationFactor;
                 }
-            });
+            },
+            handleScale: function (event) {
+                if (this.isVisible) {
+                    this.scaleFactor = this.scaleFactor || this.initialScale.x;
+                    this.scaleFactor *= 1 + event.detail.spreadChange / event.detail.startSpread;
+
+                    this.scaleFactor = Math.min(Math.max(this.scaleFactor, this.data.minScale), this.data.maxScale);
+
+                    this.el.object3D.scale.x = this.scaleFactor;
+                    this.el.object3D.scale.y = this.scaleFactor;
+                    this.el.object3D.scale.z = this.scaleFactor;
+                }
+            },
+            handleTap: function (event) {
+                if (!this.isVisible) return;
+
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(
+                    {
+                        x: (event.detail.position.x / window.innerWidth) * 2 - 1,
+                        y: -(event.detail.position.y / window.innerHeight) * 2 + 1
+                    },
+                    this.el.sceneEl.camera
+                );
+
+                const intersects = raycaster.intersectObject(this.el.object3D, true);
+                if (intersects.length > 0) {
+                    const title = this.el.getAttribute('data-title') || 'Информация';
+                    const desc = this.el.getAttribute('data-desc') || '';
+                    openInfoPanel(title, desc);
+                }
+            }
         });
 
         // --- Показ/скрытие курсора в зависимости от того, видна метка или нет ---
         const marker = document.getElementById('mainMarker');
         const cursor = document.getElementById('cursor');
+        const scene = document.getElementById('arScene');
 
-        // Безопасная функция для переключения видимости курсора
         function setCursorVisible(visible) {
             if (!cursor) return;
-            // a-cursor принимает атрибут visible (boolean). Меняем его.
             cursor.setAttribute('visible', visible ? 'true' : 'false');
         }
 
@@ -205,28 +420,29 @@
             marker.addEventListener('markerFound', () => {
                 console.log('Marker found -> show cursor');
                 setCursorVisible(true);
-
-                // Можно при появлении метки включить видимость самих POI (если хотите скрыть их по умолчанию)
-                document.querySelectorAll('.poi').forEach(p => p.setAttribute('visible', 'true'));
+                
+                document.querySelectorAll('.poi').forEach(p => {
+                    p.setAttribute('visible', 'true');
+                    if (p.components['gesture-handler']) {
+                        p.components['gesture-handler'].isVisible = true;
+                    }
+                });
             });
 
             marker.addEventListener('markerLost', () => {
                 console.log('Marker lost -> hide cursor & close panel');
                 setCursorVisible(false);
-
-                // Скрываем панель, если она открыта (логично: когда картина ушла — панель закрывается)
                 closeInfoPanel();
-
-                // Если POI должны быть невидимы при отсутствии метки, можно убрать их:
-                // document.querySelectorAll('.poi').forEach(p => p.setAttribute('visible', 'false'));
+                
+                document.querySelectorAll('.poi').forEach(p => {
+                    if (p.components['gesture-handler']) {
+                        p.components['gesture-handler'].isVisible = false;
+                    }
+                });
             });
         }
 
-        // По умолчанию: если хотите, чтобы POI были невидимы до появления метки, можно:
-        // document.querySelectorAll('.poi').forEach(p => p.setAttribute('visible', 'false'));
-        // но в данном примере я оставил их видимыми (они рендерятся только когда метка видна в AR).
-
-        // Обработка Escape — если панель открыта, закрыть; иначе вернуться назад
+        // Обработка Escape
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 if (infoPanel.classList.contains('visible')) {
@@ -237,7 +453,7 @@
             }
         });
 
-        // Некоторый defensive JS чтобы скрыть A-Frame UI элементы, если они появятся
+        // Скрытие A-Frame UI элементов
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
                 const els = document.querySelectorAll('.a-enter-vr, .a-orientation-modal, .a-dialog, .arjs-loader');
@@ -245,6 +461,20 @@
             }, 100);
         });
 
+        // Проверка поддержки камеры
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(function(stream) {
+                    console.log('Camera access granted');
+                    stream.getTracks().forEach(track => track.stop());
+                })
+                .catch(function(error) {
+                    console.error('Camera access denied:', error);
+                    const errorMsg = document.getElementById('errorMessage');
+                    errorMsg.textContent = 'Требуется доступ к камере для AR. Пожалуйста, разрешите доступ в настройках браузера.';
+                    errorMsg.style.display = 'block';
+                });
+        }
     </script>
 </body>
 </html>

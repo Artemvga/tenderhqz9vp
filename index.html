@@ -2,7 +2,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>AR-квест «Образы Москвы»</title>
     
     <!-- Минимальные шрифты -->
@@ -29,6 +31,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -38,6 +41,8 @@
             overflow: hidden;
             position: relative;
             background: #0a0a1a;
+            -webkit-user-select: none;
+            user-select: none;
         }
         
         /* Скрытое изображение для загрузки */
@@ -49,7 +54,7 @@
             pointer-events: none;
         }
         
-        /* Фоновое изображение - будет показано после полной загрузки */
+        /* Фоновое изображение */
         .background {
             position: absolute;
             top: 0;
@@ -144,6 +149,7 @@
             transform: translateY(10px);
             animation: fadeInUp 0.8s ease-out 0.6s forwards;
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 95, 39, 0.2);
+            touch-action: manipulation;
         }
         
         .button::before {
@@ -160,11 +166,6 @@
         .button span {
             position: relative;
             z-index: 1;
-        }
-        
-        .button:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 95, 39, 0.3);
         }
         
         .button:active {
@@ -395,44 +396,64 @@
     </div>
 
     <script>
+        // Универсальная функция для обработки кликов
+        function addUniversalClickHandler(element, handler) {
+            let touchStarted = false;
+            let touchMoved = false;
+            let touchStartTime = 0;
+            
+            element.addEventListener('touchstart', function(e) {
+                touchStarted = true;
+                touchMoved = false;
+                touchStartTime = Date.now();
+            }, { passive: true });
+            
+            element.addEventListener('touchmove', function(e) {
+                touchMoved = true;
+            }, { passive: true });
+            
+            element.addEventListener('touchend', function(e) {
+                const touchDuration = Date.now() - touchStartTime;
+                if (touchStarted && !touchMoved && touchDuration < 500) {
+                    e.preventDefault();
+                    handler(e);
+                }
+                touchStarted = false;
+                touchMoved = false;
+            });
+            
+            element.addEventListener('click', function(e) {
+                if (!touchStarted) {
+                    e.preventDefault();
+                    handler(e);
+                }
+            });
+        }
+
         function goToARScene() {
+            console.log('Переход на AR сцену');
             window.location.href = "ar-scene.html";
         }
         
-        // Проверка, были ли уже загружены изображения в этой сессии
+        // Проверка кеша без использования localStorage
+        const imageCache = {
+            cached: false,
+            bgLoaded: false,
+            buttonLoaded: false
+        };
+        
         function areImagesCached() {
-            try {
-                const cacheState = localStorage.getItem('imagesCached');
-                if (cacheState === 'true') {
-                    // Проверяем действительно ли изображения в кэше браузера
-                    const bgImg = document.getElementById('preloadBg');
-                    const btnImg = document.getElementById('preloadButton');
-                    
-                    return bgImg.complete && bgImg.naturalHeight !== 0 &&
-                           btnImg.complete && btnImg.naturalHeight !== 0;
-                }
-            } catch (e) {
-                // localStorage может быть недоступен
-                console.log('localStorage недоступен');
-            }
-            return false;
+            const bgImg = document.getElementById('preloadBg');
+            const btnImg = document.getElementById('preloadButton');
+            
+            return bgImg.complete && bgImg.naturalHeight !== 0 &&
+                   btnImg.complete && btnImg.naturalHeight !== 0;
         }
         
-        // Сохранение состояния кэширования
-        function markImagesAsCached() {
-            try {
-                localStorage.setItem('imagesCached', 'true');
-                // Сохраняем время кэширования
-                localStorage.setItem('cacheTime', Date.now().toString());
-            } catch (e) {
-                // Игнорируем ошибки localStorage
-            }
-        }
-        
-        // Быстрая загрузка если изображения уже кэшированы
+        // Быстрая загрузка если изображения уже кешированы
         function quickLoadIfCached() {
             if (areImagesCached()) {
-                console.log('Используем кэшированные изображения');
+                console.log('Используем кешированные изображения');
                 
                 const loading = document.getElementById('loading');
                 const background = document.getElementById('background');
@@ -441,12 +462,10 @@
                 const preloadBg = document.getElementById('preloadBg');
                 const preloadButton = document.getElementById('preloadButton');
                 
-                // Сразу устанавливаем фон и скрываем загрузку
                 background.style.backgroundImage = `url('${preloadBg.src}')`;
                 background.classList.add('loaded');
                 startButton.style.backgroundImage = `url('${preloadButton.src}')`;
                 
-                // Сразу показываем контент, без анимации загрузки
                 loading.classList.add('instant-hidden');
                 content.classList.add('visible');
                 
@@ -455,12 +474,11 @@
             return false;
         }
         
-        // Основная загрузка - оптимизированная
+        // Основная загрузка
         document.addEventListener('DOMContentLoaded', function() {
-            // НЕМЕДЛЕННО показываем контент, если изображения в кэше
             if (quickLoadIfCached()) {
-                // Сразу добавляем обработчик клика
-                document.getElementById('startButton').addEventListener('click', goToARScene);
+                const startButton = document.getElementById('startButton');
+                addUniversalClickHandler(startButton, goToARScene);
                 return;
             }
             
@@ -469,32 +487,25 @@
             const content = document.getElementById('content');
             const startButton = document.getElementById('startButton');
             
-            // УЖЕ показали загрузочный экран - не ждем
-            // Сразу добавляем обработчик клика
-            startButton.addEventListener('click', goToARScene);
+            addUniversalClickHandler(startButton, goToARScene);
             
-            // Начинаем загрузку фона ПАРАЛЛЕЛЬНО с показом загрузочного экрана
             const bgUrl = 'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/BG.png';
             const buttonUrl = 'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png';
             
-            // Загружаем изображения параллельно
             Promise.all([
                 loadImage(bgUrl),
                 loadImage(buttonUrl)
             ]).then(function(results) {
                 const [bgImg, buttonImg] = results;
                 
-                // Отмечаем что изображения кэшированы
-                markImagesAsCached();
+                imageCache.cached = true;
+                imageCache.bgLoaded = true;
+                imageCache.buttonLoaded = true;
                 
-                // Устанавливаем фон СРАЗУ
                 background.style.backgroundImage = `url('${bgImg.src}')`;
                 background.classList.add('loaded');
-                
-                // Устанавливаем фон кнопки
                 startButton.style.backgroundImage = `url('${buttonImg.src}')`;
                 
-                // Минимальная задержка для плавности
                 setTimeout(function() {
                     loading.classList.add('hidden');
                     setTimeout(function() {
@@ -505,13 +516,10 @@
             }).catch(function(error) {
                 console.error('Ошибка загрузки:', error);
                 
-                // Fallback на градиенты при ошибке
                 background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
                 background.classList.add('loaded');
-                
                 startButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
                 
-                // Все равно показываем контент
                 setTimeout(function() {
                     loading.classList.add('hidden');
                     setTimeout(function() {
@@ -520,7 +528,6 @@
                 }, 300);
             });
             
-            // Функция для загрузки изображения с таймаутом
             function loadImage(url) {
                 return new Promise(function(resolve, reject) {
                     const img = new Image();
@@ -529,7 +536,7 @@
                     const timeoutId = setTimeout(function() {
                         reject(new Error('Таймаут загрузки изображения'));
                         img.onload = img.onerror = null;
-                    }, 5000); // 5 секунд таймаут
+                    }, 5000);
                     
                     img.onload = function() {
                         clearTimeout(timeoutId);
@@ -543,7 +550,6 @@
                     
                     img.src = url;
                     
-                    // Если изображение уже загружено (из кэша)
                     if (img.complete && img.naturalHeight !== 0) {
                         clearTimeout(timeoutId);
                         resolve(img);
@@ -551,7 +557,7 @@
                 });
             }
             
-            // Предзагрузка других ресурсов (не блокирующая)
+            // Предзагрузка других ресурсов
             setTimeout(function() {
                 const otherResources = [
                     'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_Back.png',
@@ -561,10 +567,8 @@
                 
                 otherResources.forEach(url => {
                     if (url.endsWith('.patt')) {
-                        // Загрузка паттерна
-                        fetch(url, {mode: 'cors'});
+                        fetch(url, {mode: 'cors'}).catch(() => {});
                     } else {
-                        // Загрузка изображений
                         const img = new Image();
                         img.crossOrigin = "anonymous";
                         img.src = url;
@@ -572,31 +576,27 @@
                 });
             }, 100);
             
-            // Таймаут на случай проблем с загрузкой (сокращен до 3 секунд)
+            // Таймаут на случай проблем с загрузкой
             setTimeout(function() {
                 if (!loading.classList.contains('hidden') && !loading.classList.contains('instant-hidden')) {
                     console.log('Таймаут загрузки, показываем контент');
                     
-                    // Fallback на градиенты
                     background.style.background = 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)';
                     background.classList.add('loaded');
-                    
                     startButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
-                    
                     loading.classList.add('hidden');
                     
                     setTimeout(function() {
                         content.classList.add('visible');
                     }, 200);
                 }
-            }, 3000); // Уменьшено с 8 до 3 секунд
+            }, 3000);
         });
         
-        // При возврате на страницу проверяем кэш
+        // При возврате на страницу проверяем кеш
         window.addEventListener('pageshow', function(event) {
             if (event.persisted) {
-                // Страница загружена из кэша браузера
-                console.log('Страница загружена из кэша браузера');
+                console.log('Страница загружена из кеша браузера');
                 quickLoadIfCached();
             }
         });
