@@ -128,7 +128,7 @@
             animation: fadeInUp 0.8s ease-out 0.3s forwards;
         }
         
-        /* Базовая кнопка */
+        /* Базовая кнопка (общий стиль для всех меню/закрыть) */
         .button {
             padding: 20px 50px;
             font-size: 1.5rem;
@@ -149,6 +149,11 @@
             transform: translateY(10px);
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 95, 39, 0.2);
             touch-action: manipulation;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
         
         /* Анимации появления для каждой кнопки отдельно */
@@ -395,6 +400,8 @@
         .instruction-modal-inner h2 {
             font-size: 1.4rem;
             margin-bottom: 14px;
+            color: #ffffff;
+            text-align: center;
         }
 
         .instruction-block {
@@ -408,6 +415,7 @@
         .instruction-block-title {
             font-weight: 600;
             margin-bottom: 4px;
+            color: #ffffff;
         }
 
         .instruction-block-title span.emoji {
@@ -415,7 +423,7 @@
         }
 
         .instruction-close-btn {
-            margin-top: 12px;
+            margin-top: 16px;
             width: 100%;
         }
 
@@ -531,9 +539,24 @@
     </div>
 
     <script>
+        // Определяем iOS один раз
+        const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
         // Универсальная функция для обработки кликов
         function addUniversalClickHandler(element, handler) {
             if (!element) return;
+
+            // "Версия" для iOS — простой click
+            if (IS_IOS) {
+                element.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handler(e);
+                });
+                return;
+            }
+
+            // "Версия" для Android / десктопа
             let touchStarted = false;
             let touchMoved = false;
             let touchStartTime = 0;
@@ -591,19 +614,12 @@
             if (areImagesCached()) {
                 console.log('Используем кешированные изображения');
                 
-                const loading = document.getElementById('loading');
-                const background = document.getElementById('background');
-                const content = document.getElementById('content');
-                const startButton = document.getElementById('startButton');
-                const instructionButton = document.getElementById('instructionButton');
-                const preloadBg = document.getElementById('preloadBg');
-                const preloadButton = document.getElementById('preloadButton');
-                
                 background.style.backgroundImage = `url('${preloadBg.src}')`;
                 background.classList.add('loaded');
                 startButton.style.backgroundImage = `url('${preloadButton.src}')`;
                 instructionButton.style.backgroundImage = `url('${preloadButton.src}')`;
-                
+                if (closeInstruction) closeInstruction.style.backgroundImage = `url('${preloadButton.src}')`;
+
                 loading.classList.add('instant-hidden');
                 content.classList.add('visible');
                 
@@ -679,16 +695,17 @@
                 loadImage(bgUrl),
                 loadImage(buttonUrl)
             ]).then(function(results) {
-                const [bgImg, buttonImg] = results;
-                
-                imageCache.cached = true;
-                imageCache.bgLoaded = true;
-                imageCache.buttonLoaded = true;
-                
-                background.style.backgroundImage = `url('${bgImg.src}')`;
-                background.classList.add('loaded');
-                startButton.style.backgroundImage = `url('${buttonImg.src}')`;
-                instructionButton.style.backgroundImage = `url('${buttonImg.src}')`;
+                    const [bgImg, buttonImg] = results;
+
+                    imageCache.cached = true;
+                    imageCache.bgLoaded = true;
+                    imageCache.buttonLoaded = true;
+
+                    background.style.backgroundImage = `url('${bgImg.src}')`;
+                    background.classList.add('loaded');
+                    startButton.style.backgroundImage = `url('${buttonImg.src}')`;
+                    instructionButton.style.backgroundImage = `url('${buttonImg.src}')`;
+                    if (closeInstruction) closeInstruction.style.backgroundImage = `url('${buttonImg.src}')`;
                 
                 setTimeout(function() {
                     loading.classList.add('hidden');
@@ -704,6 +721,8 @@
                 background.classList.add('loaded');
                 startButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
                 instructionButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
+                if (closeInstruction) closeInstruction.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
+
                 
                 setTimeout(function() {
                     loading.classList.add('hidden');
@@ -770,6 +789,8 @@
                     background.classList.add('loaded');
                     startButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
                     instructionButton.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
+                    if (closeInstruction) closeInstruction.style.backgroundImage = 'linear-gradient(135deg, #FF5F27 0%, #F130A0 100%)';
+
                     loading.classList.add('hidden');
                     
                     setTimeout(function() {

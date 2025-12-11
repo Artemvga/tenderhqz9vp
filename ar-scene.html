@@ -61,24 +61,68 @@
             border: 2px solid rgba(255,95,39,0.18);
         }
         .info-panel.visible { display: block; }
-        .info-panel h2 { margin: 0 0 12px 0; font-size:20px; }
-        .info-panel p { margin: 0 0 18px 0; font-size:15px; color: rgba(255,255,255,0.9); }
-        .panel-close-button { 
-            width:100%; 
-            padding:14px; 
-            border-radius:10px; 
-            border:none; 
-            cursor:pointer; 
-            font-size:16px; 
-            font-weight:600; 
-            background-image: url('https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png');
-            background-size: cover;
-            color:#fff; 
-            position:relative; 
-            overflow:hidden;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+        .info-panel h2 { 
+            margin: 0 0 12px 0; 
+            font-size:20px; 
+            color: #ffffff;
         }
+        .info-panel p { margin: 0 0 18px 0; font-size:15px; color: rgba(255,255,255,0.9); }
+        
+        /* Единый стиль кнопок как в index.html */
+        .panel-close-button, 
+        .error-button {
+            width: 100%;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 95, 39, 0.2);
+            touch-action: manipulation;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 56px;
+            margin-top: 16px;
+        }
+        
+        .panel-close-button::before,
+        .error-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            z-index: 1;
+        }
+        
+        .panel-close-button span,
+        .error-button span {
+            position: relative;
+            z-index: 2;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .panel-close-button:active,
+        .error-button:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+        
         .overlay { 
             position: fixed; 
             inset:0; 
@@ -153,24 +197,28 @@
         .error-message h3 {
             margin: 0 0 15px 0;
             font-size: 1.3rem;
+            color: #ffffff;
         }
         
         .error-message p {
             margin: 0 0 20px 0;
             font-size: 0.95rem;
             line-height: 1.4;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .error-button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
         }
         
         .error-button {
-            background: white;
-            color: #FF3B30;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 5px;
+            flex: 1;
+            min-width: 120px;
+            padding: 14px 20px;
+            background-image: url('https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png');
         }
 
         /* Скрываем элементы A-Frame UI */
@@ -193,6 +241,13 @@
             text-align: center;
             max-width: 80%;
         }
+
+        /* Осветляем изображение с камеры */
+        video#arjs-video,
+        video.arjs-video,
+        .arjs-video video {
+            filter: brightness(1.4) contrast(1.08) saturate(1.05);
+        }
     </style>
 </head>
 <body>
@@ -206,8 +261,10 @@
     <div class="error-message" id="errorMessage">
         <h3>Ошибка доступа к камере</h3>
         <p id="errorText">Для работы AR необходим доступ к камере.</p>
-        <button class="error-button" id="retryButton">Повторить</button>
-        <button class="error-button" id="backFromError">Назад</button>
+        <div class="error-button-container">
+            <button class="error-button" id="retryButton"><span>Повторить</span></button>
+            <button class="error-button" id="backFromError"><span>Назад</span></button>
+        </div>
     </div>
 
     <button class="back-button" id="backButton" title="Назад">
@@ -241,14 +298,14 @@
 
         <!-- ТВОЯ МЕТКА -->
         <a-marker
-            id="mainMarker"
+            id="0"
             type="pattern"
             preset="custom"
-            url="https://raw.githubusercontent.com/Artemvga/tenderhqz9vp/gh-pages/assets/marker.patt"
+            url="https://github.com/Artemvga/tenderhqz9vp/blob/gh-pages/assets/mark.patt"
             raycaster="objects: .clickable"
             emitevents="true"
         >
-            <!-- Два POI с твоими настройками -->
+            <!-- Два POI -->
             <a-plane
                 id="poi-dot-1"
                 class="clickable poi"
@@ -289,10 +346,24 @@
 <script>
     console.log('=== AR Scene – simple POI tap mode ===');
 
+    // Определение iOS
+    const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
     // Универсальный хендлер для HTML-кнопок (назад, закрыть, ретрай и т.п.)
     function addUniversalClickHandler(element, handler) {
         if (!element) return;
 
+        // Отдельная "версия" поведения для iOS
+        if (IS_IOS) {
+            element.addEventListener('click', function (e) {
+                e.preventDefault();
+                handler(e);
+            });
+            return;
+        }
+
+        // Версия для Android / десктопа
         let touchStarted = false;
         let touchMoved = false;
         let touchStartTime = 0;
@@ -355,7 +426,7 @@
         const instruction   = document.getElementById('instruction');
 
         const scene  = document.getElementById('arScene');
-        const marker = document.getElementById('mainMarker');
+        const marker = document.getElementById('0');
         const cursor = document.getElementById('cursor'); // только для настройки rayOrigin: mouse (невидимый курсор)
 
         let poiElements = [];
@@ -435,7 +506,7 @@
             console.warn('Not using HTTPS - camera may not work correctly');
         }
         
-                // ==== Настройка интерактива для POI ====
+        // ==== Настройка интерактива для POI ====
         function setupPOIInteraction() {
             console.log('Setting up POI interaction (tap near dots)');
 
@@ -512,7 +583,6 @@
                 }
 
                 // Если панель уже открыта — можно либо игнорить, либо менять POI.
-                // Я сделал: игнорим, пока панель открыта.
                 if (infoPanel.classList.contains('visible')) {
                     return;
                 }
@@ -537,7 +607,6 @@
                     }
                 });
 
-                // Радиус "липкости" к точке, можно поиграть (60–100 px)
                 const maxRadiusPx = 80;
 
                 if (closestPoi && closestDistSq <= maxRadiusPx * maxRadiusPx) {
@@ -584,12 +653,10 @@
             sceneReady = true;
             checkInitComplete();
 
-            // Делаем курсор невидимым и переключаем на rayOrigin: mouse,
-            // чтобы клик шел от пальца/мыши, а не от центра экрана.
+            // Делаем курсор невидимым и переключаем на rayOrigin: mouse
             if (cursor) {
                 try {
                     cursor.setAttribute('cursor', 'rayOrigin: mouse; fuse: false');
-                    // минимальное кольцо и прозрачный материал – пользователь его не видит
                     cursor.setAttribute('geometry', 'primitive: ring; radiusInner: 0.0001; radiusOuter: 0.0002');
                     cursor.setAttribute('material', 'opacity: 0; color: #FF5F27');
                 } catch (e) {
@@ -665,23 +732,18 @@
                 console.log('✗ Marker Lost');
                 markerFound = false;
 
-                // ВАЖНО: панель НЕ закрываем —
-                // пользователь может продолжать читать текст.
-                // infoPanel и overlay оставляем как есть.
-
-                // показываем подсказку, только если панель не открыта
+                // панель не закрываем
                 if (!infoPanel.classList.contains('visible') && instruction) {
                     instruction.style.display = 'block';
                 }
 
-                // скрываем точки и сбрасываем scale
                 document.querySelectorAll('.poi').forEach(p => {
                     p.setAttribute('visible', 'false');
                     p.setAttribute('scale', '0.28 0.28 0.28');
                 });
             });
         } else {
-            console.error('#mainMarker not found');
+            console.error('#0 not found');
             showError('Не удалось найти AR-маркер на сцене.');
         }
 
@@ -709,6 +771,26 @@
                 showError('Превышено время ожидания загрузки AR. Попробуйте перезагрузить страницу.');
             }
         }, 15000);
+
+        // Устанавливаем фоны для кнопок
+        setTimeout(function() {
+            const buttonUrl = 'https://github.com/Artemvga/tenderhqz9vp/raw/gh-pages/assets/sprites/PNG/Button_BG_Color.png';
+            
+            // Устанавливаем фон для кнопок в AR сцене
+            const panelCloseBtn = document.getElementById('closePanel');
+            const retryBtn = document.getElementById('retryButton');
+            const backErrBtn = document.getElementById('backFromError');
+            
+            if (panelCloseBtn) {
+                panelCloseBtn.style.backgroundImage = `url('${buttonUrl}')`;
+            }
+            if (retryBtn) {
+                retryBtn.style.backgroundImage = `url('${buttonUrl}')`;
+            }
+            if (backErrBtn) {
+                backErrBtn.style.backgroundImage = `url('${buttonUrl}')`;
+            }
+        }, 500);
     });
 </script>
 </body>
